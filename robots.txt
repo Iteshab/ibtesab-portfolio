@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ibtesab-alam.vercel.app/sitemap.xml
+Sitemap: https://ibtesab-portfolio.vercel.app/sitemap.xml
