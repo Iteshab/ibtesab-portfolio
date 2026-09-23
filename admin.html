@@ -29,14 +29,23 @@
   <main id="app" class="hidden">
     <section class="panel">
       <div class="sectionHead"><div><h2>Profile Photo</h2><p class="muted">Upload or replace the photo shown on the public portfolio.</p></div></div>
-      <div class="profileGrid">
-        <div class="photoBox"><img id="photoPreview" alt="Profile preview"><div id="photoFallback">IA</div></div>
-        <div>
-          <input id="photoInput" type="file" accept="image/png,image/jpeg,image/webp">
-          <button id="uploadPhoto" class="btn primary" type="button">Upload / Replace Photo</button>
-          <div id="photoMsg" class="msg"></div>
-        </div>
-      </div>
+       <input id="photoX" type="range" min="0" max="100" step="1" value="50">
+      </label>
+
+      <label>
+        Vertical
+        <input id="photoY" type="range" min="0" max="100" step="1" value="50">
+      </label>
+
+      <button id="savePhotoPosition" class="btn primary" type="button">
+        Save Photo Position
+      </button>
+
+      div id="photoAdjustMsg" class="msg"></div>
+    </div>
+  </div>
+
+</div>
     </section>
 
     <section class="panel">
