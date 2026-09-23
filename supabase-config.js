@@ -3,3 +3,9 @@
 window.SUPABASE_URL = 'https://zaknvxgavhwcyhrdions.supabase.co';
 window.SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_5o6X5A-BLo3y2d3SSbNnJA_ZlNHrFpi';
 window.ADMIN_EMAIL = 'ibtesabalam7@gmail.com';
+
+
+window.supabaseClient = window.supabase.createClient(
+  window.SUPABASE_URL,
+  window.SUPABASE_PUBLISHABLE_KEY
+);

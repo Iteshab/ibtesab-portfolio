@@ -170,3 +170,81 @@ document.addEventListener("DOMContentLoaded",()=>{
  send.onclick=async()=>{send.disabled=true;msg.textContent="Sending reset email...";try{const {error}=await supabase.auth.resetPasswordForEmail("ibtesabalam7@gmail.com",{redirectTo:window.location.origin+"/admin.html"});if(error)throw error;msg.textContent="Reset email sent. Check inbox/spam.";}catch(e){msg.textContent=e.message||"Could not send reset email.";}finally{send.disabled=false;}};
  supabase.auth.onAuthStateChange(async(event,session)=>{if(event==="PASSWORD_RECOVERY"&&session){const p=prompt("Enter new admin password (minimum 6 characters):");if(!p)return;if(p.length<6){alert("Password must be at least 6 characters.");return;}const {error}=await supabase.auth.updateUser({password:p});if(error)alert("Password update failed: "+error.message);else{alert("Password updated successfully.");location.href=location.origin+"/admin.html";}}});
 });
+
+// Forgot password / recovery flow
+document.addEventListener("DOMContentLoaded", function () {
+  const forgot = document.getElementById("forgotPassword");
+  const modal = document.getElementById("forgotModal");
+  const close = document.getElementById("closeForgot");
+  const send = document.getElementById("sendReset");
+  const msg = document.getElementById("resetMsg");
+
+  if (!forgot || !modal || !send) return;
+
+  forgot.addEventListener("click", function (e) {
+    e.preventDefault();
+    modal.style.display = "flex";
+    if (msg) msg.textContent = "";
+  });
+
+  if (close) {
+    close.addEventListener("click", function () {
+      modal.style.display = "none";
+    });
+  }
+
+  send.addEventListener("click", async function () {
+    const client = window.supabaseClient;
+
+    if (!client || !client.auth) {
+      if (msg) msg.textContent = "Supabase client is not loaded. Please refresh the page.";
+      return;
+    }
+
+    send.disabled = true;
+    if (msg) msg.textContent = "Sending reset email...";
+
+    try {
+      const email = "ibtesabalam7@gmail.com";
+      const redirectTo = window.location.origin + "/admin.html";
+
+      const { error } = await client.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectTo
+      });
+
+      if (error) throw error;
+
+      if (msg) msg.textContent = "Reset email sent. Check your inbox and Spam folder.";
+    } catch (err) {
+      console.error("Password reset error:", err);
+      if (msg) msg.textContent = err && err.message ? err.message : "Could not send reset email.";
+    } finally {
+      send.disabled = false;
+    }
+  });
+
+  if (window.supabaseClient && window.supabaseClient.auth) {
+    window.supabaseClient.auth.onAuthStateChange(async function (event, session) {
+      if (event !== "PASSWORD_RECOVERY" || !session) return;
+
+      const newPassword = prompt("Enter your new admin password (minimum 6 characters):");
+      if (!newPassword) return;
+
+      if (newPassword.length < 6) {
+        alert("Password must be at least 6 characters.");
+        return;
+      }
+
+      const { error } = await window.supabaseClient.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        alert("Password update failed: " + error.message);
+      } else {
+        alert("Password updated successfully. You can now log in.");
+        window.location.href = window.location.origin + "/admin.html";
+      }
+    });
+  }
+});
