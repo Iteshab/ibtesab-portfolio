@@ -139,7 +139,7 @@ logoutBtn.addEventListener('click', async () => {
 async function loadPhoto() {
   const { data } = sb.storage.from(BUCKET).getPublicUrl(PHOTO_PATH);
   const img = $('photoPreview');
-  img.onload = () => { img.style.display = 'block'; $('photoFallback').style.display='none'; };
+  img.onload = () => { img.style.display = 'block'; $('photoFallback').style.display='none';applyPhotoSettings();};
   img.onerror = () => { img.style.display='none'; $('photoFallback').style.display='grid'; };
   img.src = data.publicUrl + '?t=' + Date.now();
 }
