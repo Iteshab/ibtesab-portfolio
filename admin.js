@@ -1,4 +1,5 @@
 const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_PUBLISHABLE_KEY);
+console.log("Supabase client loaded:",sb);
 const ADMIN_EMAIL = window.ADMIN_EMAIL;
 const BUCKET = 'profile-photo';
 const PHOTO_PATH = 'profile/profile-photo.webp';
