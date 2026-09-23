@@ -2,6 +2,91 @@ const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_PUB
 const ADMIN_EMAIL = window.ADMIN_EMAIL;
 const BUCKET = 'profile-photo';
 const PHOTO_PATH = 'profile/profile-photo.webp';
+// Photo adjustment settings
+let photoSettings = {
+  zoom: 1,
+  x: 50,
+  y: 50
+};
+
+function applyPhotoSettings() {
+  const img = $('photoPreview');
+  if (!img) return;
+
+  img.style.objectPosition = `${photoSettings.x}% ${photoSettings.y}%`;
+  img.style.transform = `scale(${photoSettings.zoom})`;
+}
+
+async function loadPhotoSettings() {
+  const { data, error } = await sb
+    .from('profile_settings')
+    .select('photo_zoom, photo_x, photo_y')
+    .eq('id', 1)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Could not load photo settings:', error);
+    return;
+  }
+
+  if (data) {
+    photoSettings.zoom = Number(data.photo_zoom) || 1;
+    photoSettings.x = Number(data.photo_x) || 50;
+    photoSettings.y = Number(data.photo_y) || 50;
+  }
+
+  $('photoZoom').value = photoSettings.zoom;
+  $('photoX').value = photoSettings.x;
+  $('photoY').value = photoSettings.y;
+
+  applyPhotoSettings();
+}
+
+async function savePhotoSettings() {
+  const zoom = Number($('photoZoom').value);
+  const x = Number($('photoX').value);
+  const y = Number($('photoY').value);
+
+  const { error } = await sb
+    .from('profile_settings')
+    .upsert({
+      id: 1,
+      photo_zoom: zoom,
+      photo_x: x,
+      photo_y: y
+    });
+
+  if (error) {
+    msg($('photoAdjustMsg'), error.message, 'error');
+    return;
+  }
+
+  photoSettings.zoom = zoom;
+  photoSettings.x = x;
+  photoSettings.y = y;
+
+  applyPhotoSettings();
+
+  msg($('photoAdjustMsg'), 'Photo position saved successfully.', 'ok');
+}
+
+// Live preview while moving sliders
+$('photoZoom').addEventListener('input', () => {
+  photoSettings.zoom = Number($('photoZoom').value);
+  applyPhotoSettings();
+});
+
+$('photoX').addEventListener('input', () => {
+  photoSettings.x = Number($('photoX').value);
+  applyPhotoSettings();
+});
+
+$('photoY').addEventListener('input', () => {
+  photoSettings.y = Number($('photoY').value);
+  applyPhotoSettings();
+});
+
+$('savePhotoPosition').addEventListener('click', savePhotoSettings);
 
 const $ = (id) => document.getElementById(id);
 const loginPanel = $('loginPanel'), app = $('app'), logoutBtn = $('logoutBtn');
@@ -26,10 +111,11 @@ async function requireAdmin() {
     msg($('loginMsg'), 'This account is not authorized as the portfolio admin.', 'error');
     return false;
   }
-  showApp(true);
-  await loadPhoto();
-  await loadExperiences();
-  return true;
+showApp(true);
+await loadPhoto();
+await loadPhotoSettings();
+await loadExperiences();
+return true;
 }
 
 $('loginForm').addEventListener('submit', async (e) => {
