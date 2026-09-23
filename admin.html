@@ -23,7 +23,7 @@
       <label>Password<input id="password" type="password" autocomplete="current-password" required></label>
       <button class="btn primary" type="submit">Sign in</button>
       <div id="loginMsg" class="msg"></div>
-    </form>
+    <a href="#" id="forgotPassword" style="display:block;margin:12px 0;text-align:center">Forgot password?</a></form>
   </section>
 
   <main id="app" class="hidden">
@@ -61,5 +61,6 @@
   </main>
 </div>
 <script src="admin.js"></script>
+<div id="forgotModal" style="display:none;position:fixed;inset:0;align-items:center;justify-content:center;background:rgba(0,0,0,.65);z-index:9999"><div style="background:#fff;padding:24px;border-radius:14px;max-width:420px;width:90%;color:#111"><button id="closeForgot" type="button" style="float:right">×</button><h2>Reset Admin Password</h2><p>Reset link will be sent to <b>ibtesabalam7@gmail.com</b>.</p><button id="sendReset" type="button">Send Reset Email</button><p id="resetMsg"></p></div></div>
 </body>
 </html>
