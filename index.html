@@ -52,7 +52,12 @@
     a{text-decoration:none;color:inherit}
     .nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
     .navin{max-width:1100px;margin:auto;padding:14px 22px;display:flex;justify-content:space-between;align-items:center}
-    .brand{font-weight:800;font-size:20px}.brand span{color:var(--accent)}
+    .brand img{
+      width:50px;
+      height:50px;
+      object-fit:contain;
+      display:block;
+    }
     .navlinks{display:flex;gap:22px;font-size:14px;color:#4b5563}
     .navlinks a:hover{color:var(--accent)}
     .menu{display:none;border:0;background:#f1f4f5;border-radius:12px;padding:8px 11px;font-size:20px}
@@ -102,7 +107,9 @@
 <body>
   <nav class="nav">
     <div class="navin">
-      <a class="brand" href="#top">Ibtesab<span>.</span></a>
+      <a class="brand" href="#top">
+        <img src="ia-logo.png"alt='IA Logo">
+          </a>
       <div class="navlinks">
         <a href="#about">About</a><a href="#skills">Skills</a><a href="#experience">Experience</a>
         <a href="#projects">Projects</a><a href="#contact">Contact</a>
