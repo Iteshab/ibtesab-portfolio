@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta name="google-site-verification" content="SYs1q9B-iTP225VCOFAJdK2cNu0eCWHPjzW1V7CG4CU" />
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Ibtesab Alam is a Network Engineer and IT Infrastructure professional from India with 2+ years of experience in networking, Windows Server, firewalls, virtualization, Microsoft 365 and network monitoring.">
@@ -12,7 +11,7 @@
   <link rel="canonical" href="https://ibtesab-portfolio.vercel.app/">
 
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://ibtesab-alam.vercel.app/">
+  <meta property="og:url" content="https://ibtesab-portfolio.vercel.app/">
   <meta property="og:title" content="Ibtesab Alam | Network Engineer & IT Infrastructure Engineer">
   <meta property="og:description" content="Ibtesab Alam is a Network Engineer and IT Infrastructure professional from India with 2+ years of experience in networking, Windows Server, firewalls, virtualization, Microsoft 365 and network monitoring.">
   <meta property="og:site_name" content="Ibtesab Alam Portfolio">
@@ -26,7 +25,7 @@
     "@context": "https://schema.org",
     "@type": "Person",
     "name": "Ibtesab Alam",
-    "url": "https://ibtesab-alam.vercel.app/",
+    "url": "https://ibtesab-portfolio.vercel.app/",
     "jobTitle": "Network Engineer",
     "description": "Ibtesab Alam is a Network Engineer and IT Infrastructure professional from India with 2+ years of experience in networking, Windows Server, firewalls, virtualization, Microsoft 365 and network monitoring.",
     "email": "mailto:ibtesabalam7@gmail.com",
@@ -38,6 +37,9 @@
     "sameAs": []
   }
   </script>
+  <meta name="google-site-verification" content="SYs1q9B-iTP225VCOFAJdK2cNu0eCWHPjzW1V7CG4CU" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
   <title>Ibtesab Alam | Network Engineer & IT Infrastructure Engineer</title>
   <style>
     :root{
@@ -64,7 +66,7 @@
     .btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 18px;border-radius:14px;font-weight:700;border:1px solid var(--line);background:#fff}
     .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
     .profile-card{background:#fff;border:1px solid var(--line);border-radius:30px;padding:25px;box-shadow:0 18px 55px rgba(15,23,42,.08)}
-    .avatar{width:150px;height:150px;margin:0 auto 18px;border-radius:34px;display:grid;place-items:center;background:linear-gradient(135deg,#0f766e,#19a7a0);color:#fff;font-size:48px;font-weight:800;box-shadow:0 15px 30px rgba(25,167,160,.25)}
+    .avatar{width:150px;height:150px;margin:0 auto 18px;border-radius:34px;display:grid;place-items:center;background:linear-gradient(135deg,#0f766e,#19a7a0);color:#fff;font-size:48px;font-weight:800;box-shadow:0 15px 30px rgba(25,167,160,.25);overflow:hidden}.avatar img{width:100%;height:100%;object-fit:cover;display:none}
     .profile-card h2{text-align:center;font-size:25px}.role{text-align:center;color:var(--muted);margin-top:3px}
     .contact{margin-top:20px;border-top:1px solid var(--line)}
     .contact div{padding:13px 0;border-bottom:1px solid var(--line);font-size:14px}
@@ -125,7 +127,7 @@
         </div>
       </div>
       <aside class="profile-card">
-        <div class="avatar">IA</div>
+        <div class="avatar"><img id="profilePhoto" alt="Ibtesab Alam - Network Engineer"><span id="avatarFallback">IA</span></div>
         <h2>Ibtesab Alam</h2>
         <div class="role">Network & IT Infrastructure Engineer</div>
         <div class="socials">
@@ -166,29 +168,7 @@
     <section id="experience">
       <h2 class="section-title">Experience</h2>
       <p class="section-sub">Professional roles and infrastructure responsibilities.</p>
-      <div class="timeline">
-        <div class="job">
-          <div class="date">May 2026 – Present</div>
-          <div class="jobbox">
-            <h3>L2 Support Engineer IT</h3><div class="company">Bioaltus Pharmaceuticals Pvt Ltd — Angam (Vapi), India</div>
-            <ul><li>Leading end-to-end Greenfield IT infrastructure setup for a new facility.</li><li>Requirement gathering and solution architecture design.</li><li>Microsoft 365 administration.</li><li>BOQ finalization, vendor coordination, procurement, server, firewall and network deployment.</li></ul>
-          </div>
-        </div>
-        <div class="job">
-          <div class="date">Jan 2026 – May 2026</div>
-          <div class="jobbox">
-            <h3>L2 Support Engineer IT</h3><div class="company">SEFORGE Limited (Suzlon Group) — Vadodara, India</div>
-            <ul><li>Executed infrastructure projects involving Windows Server, Hyper-V and enterprise networking.</li><li>Managed SonicWall firewall solutions for network security and compliance.</li><li>Windows 7/10/11 end-user support and Microsoft 365 administration.</li><li>Vendor coordination and technical issue resolution.</li><li>Improved operational efficiency and maintained high system uptime.</li></ul>
-          </div>
-        </div>
-        <div class="job">
-          <div class="date">Jun 2024 – Dec 2025</div>
-          <div class="jobbox">
-            <h3>Senior Network Engineer</h3><div class="company">LD College of Engineering — Ahmedabad, India</div>
-            <ul><li>Designed networks, troubleshot connectivity and configured routers/switches.</li><li>Configured Cisco, Zyxel, Fortinet, D-Link, Extreme and Aruba switches, VLAN/IP and routing.</li><li>Managed Sophos, Fortinet and pfSense firewalls.</li><li>Worked with Cacti, OP Manager, Wireshark and Zabbix.</li><li>Managed Windows Server 2022, AD DS, DNS, DHCP, WDS and virtualization.</li></ul>
-          </div>
-        </div>
-      </div>
+      <div id="experienceList" class="timeline"><div class="job"><div class="date">Loading…</div><div class="jobbox"><h3>Loading experience</h3><div class="company">Please wait</div></div></div></div>
     </section>
 
     <section id="projects">
@@ -225,5 +205,6 @@
 
   <footer>© <span id="year"></span> Ibtesab Alam · Network & IT Infrastructure · India</footer>
   <script>document.getElementById('year').textContent=new Date().getFullYear();</script>
+<script src="portfolio.js"></script>
 </body>
 </html>

@@ -1,36 +1,30 @@
-# Ibtesab Alam Portfolio
+# Ibtesab Alam Portfolio — Supabase GUI Admin
 
-Vercel-ready static portfolio for **Ibtesab Alam — Network Engineer & IT Infrastructure Engineer**.
+## What this version does
+- `index.html`: public portfolio
+- `admin.html`: login-protected admin panel
+- Profile photo: upload/replace from the admin panel
+- Experience: add/edit/delete from the admin panel
+- Supabase project is connected through `supabase-config.js`
 
-## Structure
+## Supabase setup already completed
+- Project created
+- `experience` table created
+- `profile-photo` public bucket created
+- Supabase Auth admin user created
+- Experience and Storage policies created
 
-- `index.html` — portfolio homepage + SEO metadata + Person structured data
-- `sitemap.xml` — search-engine sitemap
-- `robots.txt` — crawler instructions + sitemap URL
-- `vercel.json` — Vercel headers
-- `Ibtesab_Alam_CV.pdf` — downloadable CV
+## Important
+The browser uses the Supabase **publishable** key. Do NOT put an `sb_secret_...` key in this repository.
 
-## Deploy on Vercel
+## Admin URL after Vercel deployment
+`https://ibtesab-portfolio.vercel.app/admin.html`
 
-Vercel supports static websites and can deploy a folder/ZIP directly. Upload this project through Vercel's dashboard/Drop flow or import it into a Git repository.
+## Database columns expected
+`id`, `company`, `position`, `start_date`, `end_date`, `description`, `sort_order`
 
-After deployment, verify:
+## Storage
+Bucket: `profile-photo`
+Fixed file path used by the app: `profile/profile-photo.webp`
 
-- `https://YOUR-DOMAIN/sitemap.xml`
-- `https://YOUR-DOMAIN/robots.txt`
-
-### Important
-
-The current SEO canonical/sitemap URL is:
-
-`https://ibtesab-alam.vercel.app`
-
-If Vercel assigns a different project URL, replace `https://ibtesab-alam.vercel.app` in **both `index.html` and `sitemap.xml`** with the actual production URL before requesting indexing.
-
-## Google indexing
-
-After the site is live, add the production URL to Google Search Console and submit:
-
-`https://YOUR-DOMAIN/sitemap.xml`
-
-Google decides when/if a page appears in search; SEO metadata improves how the page is understood and displayed but does not guarantee a particular ranking.
+If the portfolio shows old content after a photo change, refresh the page once.

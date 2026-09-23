@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ibtesab Alam | Portfolio Admin</title>
+<link rel="stylesheet" href="admin.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div><div class="eyebrow">PORTFOLIO CMS</div><h1>Ibtesab Admin</h1><p>Manage your profile photo and professional experience.</p></div>
+    <button id="logoutBtn" class="btn ghost hidden">Log out</button>
+  </header>
+
+  <section id="loginPanel" class="panel narrow">
+    <h2>Admin Login</h2>
+    <p class="muted">Sign in with the admin account created in Supabase.</p>
+    <form id="loginForm">
+      <label>Email<input id="email" type="email" autocomplete="username" required></label>
+      <label>Password<input id="password" type="password" autocomplete="current-password" required></label>
+      <button class="btn primary" type="submit">Sign in</button>
+      <div id="loginMsg" class="msg"></div>
+    </form>
+  </section>
+
+  <main id="app" class="hidden">
+    <section class="panel">
+      <div class="sectionHead"><div><h2>Profile Photo</h2><p class="muted">Upload or replace the photo shown on the public portfolio.</p></div></div>
+      <div class="profileGrid">
+        <div class="photoBox"><img id="photoPreview" alt="Profile preview"><div id="photoFallback">IA</div></div>
+        <div>
+          <input id="photoInput" type="file" accept="image/png,image/jpeg,image/webp">
+          <button id="uploadPhoto" class="btn primary" type="button">Upload / Replace Photo</button>
+          <div id="photoMsg" class="msg"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="sectionHead"><div><h2>Experience</h2><p class="muted">Add, edit or delete professional roles.</p></div><button id="newExperience" class="btn primary">+ Add Experience</button></div>
+      <div id="experienceList" class="list"></div>
+    </section>
+
+    <section id="editor" class="panel hidden">
+      <div class="sectionHead"><div><h2 id="editorTitle">Add Experience</h2><p class="muted">Use the same fields as your portfolio database.</p></div><button id="cancelEdit" class="btn ghost" type="button">Cancel</button></div>
+      <form id="experienceForm" class="formGrid">
+        <input id="expId" type="hidden">
+        <label>Job Title<input id="position" required></label>
+        <label>Company<input id="company" required></label>
+        <label>Start Date<input id="startDate" placeholder="May 2026" required></label>
+        <label>End Date<input id="endDate" placeholder="Present" required></label>
+        <label class="full">Responsibilities <span class="hint">Put one responsibility per line.</span><textarea id="description" rows="7"></textarea></label>
+        <label>Display Order<input id="sortOrder" type="number" value="1" min="1"></label>
+        <div class="full actions"><button class="btn primary" type="submit">Save Experience</button><button id="cancelEdit2" class="btn ghost" type="button">Cancel</button></div>
+        <div id="saveMsg" class="msg full"></div>
+      </form>
+    </section>
+  </main>
+</div>
+<script src="admin.js"></script>
+</body>
+</html>
