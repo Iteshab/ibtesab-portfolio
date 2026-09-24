@@ -243,8 +243,6 @@ async function deleteExperience(id) {
   if (error) { alert(error.message); return; }
   await loadExperiences();
 }
-
-sb.auth.onAuthStateChange((_event, _session) => requireAdmin());
 requireAdmin();
 
 
