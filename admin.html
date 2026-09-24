@@ -229,7 +229,89 @@
       <div id="experienceList" class="list"></div>
 
     </section>
+<section class="panel">
+  <div class="sectionHead">
+    <div>
+      <h2>Projects</h2>
+      <p class="muted">Manage projects completed under your professional experience.</p>
+    </div>
 
+    <button id="newProject" class="btn primary" type="button">
+      + Add Project
+    </button>
+  </div>
+
+  <div id="projectList" class="list"></div>
+</section>
+
+<section id="projectEditor" class="panel hidden">
+
+  <div class="sectionHead">
+    <div>
+      <h2 id="projectEditorTitle">Add Project</h2>
+      <p class="muted">Add a project completed during your employment.</p>
+    </div>
+
+    <button id="cancelProjectEdit" class="btn ghost" type="button">
+      Cancel
+    </button>
+  </div>
+
+  <form id="projectForm" class="formGrid">
+
+    <input id="projectId" type="hidden">
+
+    <label>
+      Project Name
+      <input id="projectName" required>
+    </label>
+
+    <label>
+      Role
+      <input id="projectRole" placeholder="Network Engineer">
+    </label>
+
+    <label>
+      Location
+      <input id="projectLocation" placeholder="Ahmedabad, India">
+    </label>
+
+    <label>
+      Start Date
+      <input id="projectStartDate" placeholder="June 2024">
+    </label>
+
+    <label>
+      End Date
+      <input id="projectEndDate" placeholder="Dec 2025">
+    </label>
+
+    <label>
+      Display Order
+      <input id="projectSortOrder" type="number" value="1" min="1">
+    </label>
+
+    <label class="full">
+      Project Details
+      <span class="hint">Put one responsibility per line.</span>
+      <textarea id="projectDescription" rows="8"></textarea>
+    </label>
+
+    <div class="full actions">
+      <button class="btn primary" type="submit">
+        Save Project
+      </button>
+
+      <button id="cancelProjectEdit2" class="btn ghost" type="button">
+        Cancel
+      </button>
+    </div>
+
+    <div id="projectSaveMsg" class="msg full"></div>
+
+  </form>
+
+</section>
 
     <!-- EXPERIENCE EDITOR -->
 
