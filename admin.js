@@ -3,7 +3,7 @@ const sb = window.supabase.createClient(
   window.SUPABASE_PUBLISHABLE_KEY
 );
 
-const ADMIN_EMAIL = window.ADMIN_EMAIL;
+const ADMIN_EMAIL = 'ibtesabalam7@gmail.com';
 const BUCKET = 'profile-photo';
 const PHOTO_PATH = 'profile/profile-photo.webp';
 
