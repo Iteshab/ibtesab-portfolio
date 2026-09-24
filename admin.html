@@ -4,72 +4,433 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ibtesab Alam | Portfolio Admin</title>
+
 <link rel="stylesheet" href="admin.css">
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 </head>
+
 <body>
+
 <div class="wrap">
+
   <header class="top">
-    <div><div class="eyebrow">PORTFOLIO CMS</div><h1>Ibtesab Admin</h1><p>Manage your profile photo and professional experience.</p></div>
-    <button id="logoutBtn" class="btn ghost hidden">Log out</button>
+    <div>
+      <div class="eyebrow">PORTFOLIO CMS</div>
+      <h1>Ibtesab Admin</h1>
+      <p>Manage your profile photo and professional experience.</p>
+    </div>
+
+    <button id="logoutBtn" class="btn ghost hidden">
+      Log out
+    </button>
   </header>
 
-  <section id="loginPanel" class="panel narrow">
-    <h2>Admin Login</h2>
-    <p class="muted">Sign in with the admin account created in Supabase.</p>
-    <form id="loginForm">
-      <label>Email<input id="email" type="email" autocomplete="username" required></label>
-      <label>Password<input id="password" type="password" autocomplete="current-password" required></label>
-      <button class="btn primary" type="submit">Sign in</button>
-      <div id="loginMsg" class="msg"></div>
-    <a href="#" id="forgotPassword" style="display:block;margin:12px 0;text-align:center">Forgot password?</a></form>
-  </section>
 
-  <main id="app" class="hidden">
-    <section class="panel">
-      <div class="sectionHead"><div><h2>Profile Photo</h2><p class="muted">Upload or replace the photo shown on the public portfolio.</p></div></div>
-       <input id="photoX" type="range" min="0" max="100" step="1" value="50">
+  <!-- LOGIN -->
+
+  <section id="loginPanel" class="panel narrow">
+
+    <h2>Admin Login</h2>
+
+    <p class="muted">
+      Sign in with the admin account created in Supabase.
+    </p>
+
+    <form id="loginForm">
+
+      <label>
+        Email
+        <input
+          id="email"
+          type="email"
+          autocomplete="username"
+          required
+        >
       </label>
 
       <label>
-        Vertical
-        <input id="photoY" type="range" min="0" max="100" step="1" value="50">
+        Password
+        <input
+          id="password"
+          type="password"
+          autocomplete="current-password"
+          required
+        >
       </label>
 
-      <button id="savePhotoPosition" class="btn primary" type="button">
-        Save Photo Position
+      <button class="btn primary" type="submit">
+        Sign in
       </button>
 
-      <div id="photoAdjustMsg" class="msg"></div>
-    </div>
+      <div id="loginMsg" class="msg"></div>
+
+      <a
+        href="#"
+        id="forgotPassword"
+        style="display:block;margin:12px 0;text-align:center"
+      >
+        Forgot password?
+      </a>
+
+    </form>
+
+  </section>
+
+
+  <!-- ADMIN APP -->
+
+  <main id="app" class="hidden">
+
+
+    <!-- PROFILE PHOTO -->
+
+    <section class="panel">
+
+      <div class="sectionHead">
+
+        <div>
+          <h2>Profile Photo</h2>
+
+          <p class="muted">
+            Upload or replace the photo shown on the public portfolio.
+          </p>
+        </div>
+
+      </div>
+
+
+      <div class="profileGrid">
+
+        <!-- PHOTO PREVIEW -->
+
+        <div class="photoBox">
+
+          <img
+            id="photoPreview"
+            alt="Profile preview"
+          >
+
+          <div id="photoFallback">
+            IA
+          </div>
+
+        </div>
+
+
+        <!-- PHOTO CONTROLS -->
+
+        <div>
+
+          <input
+            id="photoInput"
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+          >
+
+          <button
+            id="uploadPhoto"
+            class="btn primary"
+            type="button"
+          >
+            Upload / Replace Photo
+          </button>
+
+          <div id="photoMsg" class="msg"></div>
+
+
+          <!-- PHOTO POSITION -->
+
+          <div class="photoAdjust">
+
+            <label>
+              Zoom
+              <input
+                id="photoZoom"
+                type="range"
+                min="1"
+                max="2"
+                step="0.01"
+                value="1"
+              >
+            </label>
+
+
+            <label>
+              Horizontal Position
+              <input
+                id="photoX"
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                value="50"
+              >
+            </label>
+
+
+            <label>
+              Vertical Position
+              <input
+                id="photoY"
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                value="50"
+              >
+            </label>
+
+
+            <button
+              id="savePhotoPosition"
+              class="btn primary"
+              type="button"
+            >
+              Save Photo Position
+            </button>
+
+            <div id="photoAdjustMsg" class="msg"></div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- EXPERIENCE -->
+
+    <section class="panel">
+
+      <div class="sectionHead">
+
+        <div>
+          <h2>Experience</h2>
+
+          <p class="muted">
+            Add, edit or delete professional roles.
+          </p>
+        </div>
+
+        <button
+          id="newExperience"
+          class="btn primary"
+          type="button"
+        >
+          + Add Experience
+        </button>
+
+      </div>
+
+      <div id="experienceList" class="list"></div>
+
+    </section>
+
+
+    <!-- EXPERIENCE EDITOR -->
+
+    <section
+      id="editor"
+      class="panel hidden"
+    >
+
+      <div class="sectionHead">
+
+        <div>
+          <h2 id="editorTitle">
+            Add Experience
+          </h2>
+
+          <p class="muted">
+            Use the same fields as your portfolio database.
+          </p>
+        </div>
+
+        <button
+          id="cancelEdit"
+          class="btn ghost"
+          type="button"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+
+      <form
+        id="experienceForm"
+        class="formGrid"
+      >
+
+        <input
+          id="expId"
+          type="hidden"
+        >
+
+
+        <label>
+          Job Title
+          <input
+            id="position"
+            required
+          >
+        </label>
+
+
+        <label>
+          Company
+          <input
+            id="company"
+            required
+          >
+        </label>
+
+
+        <label>
+          Start Date
+          <input
+            id="startDate"
+            placeholder="May 2026"
+            required
+          >
+        </label>
+
+
+        <label>
+          End Date
+          <input
+            id="endDate"
+            placeholder="Present"
+            required
+          >
+        </label>
+
+
+        <label class="full">
+
+          Responsibilities
+
+          <span class="hint">
+            Put one responsibility per line.
+          </span>
+
+          <textarea
+            id="description"
+            rows="7"
+          ></textarea>
+
+        </label>
+
+
+        <label>
+          Display Order
+
+          <input
+            id="sortOrder"
+            type="number"
+            value="1"
+            min="1"
+          >
+
+        </label>
+
+
+        <div class="full actions">
+
+          <button
+            class="btn primary"
+            type="submit"
+          >
+            Save Experience
+          </button>
+
+          <button
+            id="cancelEdit2"
+            class="btn ghost"
+            type="button"
+          >
+            Cancel
+          </button>
+
+        </div>
+
+
+        <div
+          id="saveMsg"
+          class="msg full"
+        ></div>
+
+      </form>
+
+    </section>
+
+  </main>
+
+</div>
+
+
+<!-- JAVASCRIPT -->
+
+<script src="admin.js"></script>
+
+
+<!-- FORGOT PASSWORD MODAL -->
+
+<div
+  id="forgotModal"
+  style="
+    display:none;
+    position:fixed;
+    inset:0;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,.65);
+    z-index:9999;
+  "
+>
+
+  <div
+    style="
+      background:#fff;
+      padding:24px;
+      border-radius:14px;
+      max-width:420px;
+      width:90%;
+      color:#111;
+    "
+  >
+
+    <button
+      id="closeForgot"
+      type="button"
+      style="float:right"
+    >
+      ×
+    </button>
+
+    <h2>Reset Admin Password</h2>
+
+    <p>
+      Reset link will be sent to
+      <b>ibtesabalam7@gmail.com</b>.
+    </p>
+
+    <button
+      id="sendReset"
+      type="button"
+    >
+      Send Reset Email
+    </button>
+
+    <p id="resetMsg"></p>
+
   </div>
 
 </div>
-    </section>
 
-    <section class="panel">
-      <div class="sectionHead"><div><h2>Experience</h2><p class="muted">Add, edit or delete professional roles.</p></div><button id="newExperience" class="btn primary">+ Add Experience</button></div>
-      <div id="experienceList" class="list"></div>
-    </section>
-
-    <section id="editor" class="panel hidden">
-      <div class="sectionHead"><div><h2 id="editorTitle">Add Experience</h2><p class="muted">Use the same fields as your portfolio database.</p></div><button id="cancelEdit" class="btn ghost" type="button">Cancel</button></div>
-      <form id="experienceForm" class="formGrid">
-        <input id="expId" type="hidden">
-        <label>Job Title<input id="position" required></label>
-        <label>Company<input id="company" required></label>
-        <label>Start Date<input id="startDate" placeholder="May 2026" required></label>
-        <label>End Date<input id="endDate" placeholder="Present" required></label>
-        <label class="full">Responsibilities <span class="hint">Put one responsibility per line.</span><textarea id="description" rows="7"></textarea></label>
-        <label>Display Order<input id="sortOrder" type="number" value="1" min="1"></label>
-        <div class="full actions"><button class="btn primary" type="submit">Save Experience</button><button id="cancelEdit2" class="btn ghost" type="button">Cancel</button></div>
-        <div id="saveMsg" class="msg full"></div>
-      </form>
-    </section>
-  </main>
-</div>
-<script src="admin.js"></script>
-<div id="forgotModal" style="display:none;position:fixed;inset:0;align-items:center;justify-content:center;background:rgba(0,0,0,.65);z-index:9999"><div style="background:#fff;padding:24px;border-radius:14px;max-width:420px;width:90%;color:#111"><button id="closeForgot" type="button" style="float:right">×</button><h2>Reset Admin Password</h2><p>Reset link will be sent to <b>ibtesabalam7@gmail.com</b>.</p><button id="sendReset" type="button">Send Reset Email</button><p id="resetMsg"></p></div></div>
 </body>
 </html>
