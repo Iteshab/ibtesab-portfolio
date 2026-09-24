@@ -28,7 +28,280 @@ function showApp(show) {
 /* =========================
    Photo adjustment settings
    ========================= */
+/* =========================
+   Projects
+   ========================= */
 
+async function loadProjects() {
+  const list = $('projectList');
+
+  if (!list) {
+    return;
+  }
+
+  const { data, error } = await sb
+    .from('projects')
+    .select('*')
+    .order('sort_order', { ascending: true });
+
+  if (error) {
+    msg(list, error.message, 'error');
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    list.innerHTML =
+      '<div class="item"><div><h3>No projects added yet.</h3></div></div>';
+    return;
+  }
+
+  list.innerHTML = data.map(row => `
+    <article class="item">
+
+      <div>
+        <h3>${escapeHtml(row.project_name || '')}</h3>
+
+        <div class="company">
+          ${escapeHtml(row.role || '')}
+        </div>
+
+        <div class="date">
+          ${escapeHtml(row.location || '')}
+          ${row.start_date || row.end_date ? ' • ' : ''}
+          ${escapeHtml(row.start_date || '')}
+          ${row.start_date || row.end_date ? ' — ' : ''}
+          ${escapeHtml(row.end_date || '')}
+        </div>
+      </div>
+
+      <div class="actions">
+
+        <button
+          class="btn"
+          type="button"
+          data-project-edit="${row.id}">
+          Edit
+        </button>
+
+        <button
+          class="btn danger"
+          type="button"
+          data-project-delete="${row.id}">
+          Delete
+        </button>
+
+      </div>
+
+    </article>
+  `).join('');
+
+  list.querySelectorAll('[data-project-edit]')
+    .forEach(button => {
+      button.addEventListener('click', () => {
+        editProject(
+          Number(button.dataset.projectEdit),
+          data
+        );
+      });
+    });
+
+  list.querySelectorAll('[data-project-delete]')
+    .forEach(button => {
+      button.addEventListener('click', () => {
+        deleteProject(
+          Number(button.dataset.projectDelete)
+        );
+      });
+    });
+}
+
+
+function openProjectEditor(row = null) {
+
+  $('projectEditor').classList.remove('hidden');
+
+  $('projectEditorTitle').textContent =
+    row ? 'Edit Project' : 'Add Project';
+
+  $('projectId').value =
+    row?.id || '';
+
+  $('projectName').value =
+    row?.project_name || '';
+
+  $('projectRole').value =
+    row?.role || '';
+
+  $('projectLocation').value =
+    row?.location || '';
+
+  $('projectStartDate').value =
+    row?.start_date || '';
+
+  $('projectEndDate').value =
+    row?.end_date || '';
+
+  $('projectDescription').value =
+    row?.description || '';
+
+  $('projectSortOrder').value =
+    row?.sort_order ?? 1;
+
+  msg($('projectSaveMsg'), '');
+
+  window.scrollTo({
+    top: $('projectEditor').offsetTop - 20,
+    behavior: 'smooth'
+  });
+}
+
+
+function editProject(id, data) {
+
+  const row = data.find(
+    x => Number(x.id) === id
+  );
+
+  if (row) {
+    openProjectEditor(row);
+  }
+}
+
+
+function closeProjectEditor() {
+
+  $('projectEditor').classList.add('hidden');
+
+  $('projectForm').reset();
+
+  $('projectId').value = '';
+
+  $('projectSortOrder').value = 1;
+}
+
+
+function setupProjectEditor() {
+
+  $('newProject').addEventListener(
+    'click',
+    () => openProjectEditor()
+  );
+
+  $('cancelProjectEdit').addEventListener(
+    'click',
+    closeProjectEditor
+  );
+
+  $('cancelProjectEdit2').addEventListener(
+    'click',
+    closeProjectEditor
+  );
+
+  $('projectForm').addEventListener(
+    'submit',
+    saveProject
+  );
+}
+
+
+async function saveProject(e) {
+
+  e.preventDefault();
+
+  const id = $('projectId').value;
+
+  const payload = {
+
+    project_name:
+      $('projectName').value.trim(),
+
+    role:
+      $('projectRole').value.trim(),
+
+    location:
+      $('projectLocation').value.trim(),
+
+    start_date:
+      $('projectStartDate').value.trim(),
+
+    end_date:
+      $('projectEndDate').value.trim(),
+
+    description:
+      $('projectDescription').value.trim(),
+
+    sort_order:
+      Number($('projectSortOrder').value) || 1
+  };
+
+  msg(
+    $('projectSaveMsg'),
+    'Saving…'
+  );
+
+  let result;
+
+  if (id) {
+
+    result = await sb
+      .from('projects')
+      .update(payload)
+      .eq('id', id);
+
+  } else {
+
+    result = await sb
+      .from('projects')
+      .insert(payload);
+
+  }
+
+  if (result.error) {
+
+    msg(
+      $('projectSaveMsg'),
+      result.error.message,
+      'error'
+    );
+
+    return;
+  }
+
+  msg(
+    $('projectSaveMsg'),
+    'Project saved successfully.',
+    'ok'
+  );
+
+  await loadProjects();
+
+  setTimeout(
+    closeProjectEditor,
+    500
+  );
+}
+
+
+async function deleteProject(id) {
+
+  if (!confirm('Delete this project?')) {
+    return;
+  }
+
+  const { error } = await sb
+    .from('projects')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+
+    alert(error.message);
+
+    return;
+  }
+
+  await loadProjects();
+}
 let photoSettings = {
   zoom: 1,
   x: 50,
@@ -176,7 +449,7 @@ async function requireAdmin() {
   await loadPhoto();
   await loadPhotoSettings();
   await loadExperiences();
-
+  await loadProjects();
   return true;
 }
 
@@ -604,6 +877,7 @@ function init() {
   setupPhotoControls();
   setupPhotoUpload();
   setupExperienceEditor();
+  setupProjectEditor();
   setupPasswordRecovery();
 
   requireAdmin();
