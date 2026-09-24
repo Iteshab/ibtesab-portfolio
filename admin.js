@@ -39,11 +39,16 @@ function applyPhotoSettings() {
   const img = $('photoPreview');
   if (!img) return;
 
-  img.style.objectPosition =
-    `${photoSettings.x}% ${photoSettings.y}%`;
+  const zoom = Number(photoSettings.zoom) || 1;
+  const x = Number(photoSettings.x) || 50;
+  const y = Number(photoSettings.y) || 50;
 
+  const moveX = (x - 50) * 1.5;
+  const moveY = (y - 50) * 1.5;
+
+  img.style.objectPosition = '50% 50%';
   img.style.transform =
-    `scale(${photoSettings.zoom})`;
+    `translate(${moveX}px, ${moveY}px) scale(${zoom})`;
 }
 
 async function loadPhotoSettings() {
