@@ -252,4 +252,3 @@ function escapePortfolioHtml(value) {
 
 
 loadPortfolioContent();
-loadProjects();
