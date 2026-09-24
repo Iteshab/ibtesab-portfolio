@@ -6,8 +6,60 @@ const portfolioSupabase = window.supabase.createClient(
   SUPABASE_PUBLISHABLE_KEY
 );
 
-async function loadPortfolioContent() {
-  try {
+async function loadProjects() {
+  const list = document.getElementById('projectsList');
+
+  if (!list) return;
+
+  const { data, error } = await portfolioSupabase
+    .from('projects')
+    .select('*')
+    .order('sort_order', { ascending: true });
+
+  if (error) {
+    console.error('Projects load error:', error);
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    list.innerHTML = '';
+    return;
+  }
+
+  list.innerHTML = data.map(project => {
+
+    const responsibilities = String(project.description || '')
+      .split(/\n+/)
+      .map(x => x.trim())
+      .filter(Boolean)
+      .map(x => `<li>${escapePortfolioHtml(x)}</li>`)
+      .join('');
+
+    return `
+      <article class="card">
+        <h3>${escapePortfolioHtml(project.project_name || '')}</h3>
+
+        ${project.role
+          ? `<div class="company">${escapePortfolioHtml(project.role)}</div>`
+          : ''
+        }
+
+        ${project.location || project.start_date || project.end_date
+          ? `<div class="date">
+              ${escapePortfolioHtml(project.location || '')}
+              ${project.location && (project.start_date || project.end_date) ? ' • ' : ''}
+              ${escapePortfolioHtml(project.start_date || '')}
+              ${project.start_date || project.end_date ? ' — ' : ''}
+              ${escapePortfolioHtml(project.end_date || '')}
+            </div>`
+          : ''
+        }
+
+        ${responsibilities ? `<ul>${responsibilities}</ul>` : ''}
+      </article>
+    `;
+  }).join('');
+}
 
     // =========================
     // LOAD EXPERIENCE
@@ -200,3 +252,4 @@ function escapePortfolioHtml(value) {
 
 
 loadPortfolioContent();
+loadProjects();
