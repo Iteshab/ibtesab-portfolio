@@ -104,14 +104,20 @@ function showApp(show) {
 }
 
 async function requireAdmin() {
-  const { data: { user }, error } = await sb.auth.getUser();
-  if (error || !user) { showApp(false); return false; }
-  if ((user.email || '').toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
-    await sb.auth.signOut();
-    showApp(false);
-    msg($('loginMsg'), 'This account is not authorized as the portfolio admin.', 'error');
-    return false;
-  }
+console.log('ADMIN_EMAIL:', ADMIN_EMAIL);
+
+const { data: { user }, error } = await sb.auth.getUser();
+
+console.log('USER:', user, 'ERROR:', error);
+
+if (error || !user) { showApp(false); return false; }
+
+if ((user.email || '').toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+await sb.auth.signOut();
+showApp(false);
+msg($('loginMsg'), 'This account is not authorized as the portfolio admin.', 'error');
+return false;
+}
 showApp(true);
 await loadPhoto();
 await loadPhotoSettings();
