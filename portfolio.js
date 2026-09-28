@@ -6,9 +6,66 @@ const portfolioSupabase = window.supabase.createClient(
   SUPABASE_PUBLISHABLE_KEY
 );
 
+function escapePortfolioHtml(value) {
+  return String(value ?? '').replace(
+    /[&<>"']/g,
+    c => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }[c])
+  );
+}
+
+async function loadExperience() {
+  const list = document.getElementById('experienceList');
+  if (!list) return;
+
+  const { data, error } = await portfolioSupabase
+    .from('experience')
+    .select('*')
+    .order('sort_order', { ascending: true });
+
+  if (error) {
+    console.error('Experience load error:', error);
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    list.innerHTML =
+      '<div class="job"><div class="jobbox"><h3>No experience added yet.</h3></div></div>';
+    return;
+  }
+
+  list.innerHTML = data.map(row => {
+    const responsibilities = String(row.description || '')
+      .split(/\n+/)
+      .map(x => x.trim())
+      .filter(Boolean)
+      .map(x => `<li>${escapePortfolioHtml(x)}</li>`)
+      .join('');
+
+    return `
+      <article class="job">
+        <div class="date">
+          ${escapePortfolioHtml(row.start_date || '')}
+          —
+          ${escapePortfolioHtml(row.end_date || '')}
+        </div>
+        <div class="jobbox">
+          <h3>${escapePortfolioHtml(row.position || '')}</h3>
+          <div class="company">${escapePortfolioHtml(row.company || '')}</div>
+          ${responsibilities ? `<ul>${responsibilities}</ul>` : ''}
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
 async function loadProjects() {
   const list = document.getElementById('projectsList');
-
   if (!list) return;
 
   const { data, error } = await portfolioSupabase
@@ -22,12 +79,12 @@ async function loadProjects() {
   }
 
   if (!data || data.length === 0) {
-    list.innerHTML = '';
+    list.innerHTML =
+      '<div class="card project"><h3>No projects added yet.</h3><p>Projects will appear here when added from the admin panel.</p></div>';
     return;
   }
 
-  list.innerHTML = data.map(project => {
-
+  list.innerHTML = data.map((project, index) => {
     const responsibilities = String(project.description || '')
       .split(/\n+/)
       .map(x => x.trim())
@@ -35,220 +92,83 @@ async function loadProjects() {
       .map(x => `<li>${escapePortfolioHtml(x)}</li>`)
       .join('');
 
+    const number = String(index + 1).padStart(2, '0');
+
     return `
-      <article class="card">
+      <article class="card project">
+        <div class="num">${number} / PROJECT</div>
         <h3>${escapePortfolioHtml(project.project_name || '')}</h3>
-
-        ${project.role
-          ? `<div class="company">${escapePortfolioHtml(project.role)}</div>`
-          : ''
-        }
-
-        ${project.location || project.start_date || project.end_date
-          ? `<div class="date">
-              ${escapePortfolioHtml(project.location || '')}
-              ${project.location && (project.start_date || project.end_date) ? ' • ' : ''}
-              ${escapePortfolioHtml(project.start_date || '')}
-              ${project.start_date || project.end_date ? ' — ' : ''}
-              ${escapePortfolioHtml(project.end_date || '')}
-            </div>`
-          : ''
-        }
-
+        ${project.role ? `<div class="company">${escapePortfolioHtml(project.role)}</div>` : ''}
+        ${project.location || project.start_date || project.end_date ? `
+          <div class="date">
+            ${escapePortfolioHtml(project.location || '')}
+            ${project.location && (project.start_date || project.end_date) ? ' • ' : ''}
+            ${escapePortfolioHtml(project.start_date || '')}
+            ${project.start_date || project.end_date ? ' — ' : ''}
+            ${escapePortfolioHtml(project.end_date || '')}
+          </div>` : ''}
         ${responsibilities ? `<ul>${responsibilities}</ul>` : ''}
       </article>
     `;
   }).join('');
 }
 
-    // =========================
-    // LOAD EXPERIENCE
-    // =========================
+async function loadProfilePhoto() {
+  const img = document.getElementById('profilePhoto');
+  const fallback = document.getElementById('avatarFallback');
+  if (!img) return;
 
-    const { data: rows, error } = await portfolioSupabase
-      .from('experience')
-      .select('*')
-      .order('sort_order', { ascending: true });
+  const { data } = portfolioSupabase.storage
+    .from('profile-photo')
+    .getPublicUrl('profile/profile-photo.webp');
 
-    if (!error && rows) {
+  if (!data?.publicUrl) return;
 
-      const list = document.getElementById('experienceList');
+  img.onload = () => {
+    img.style.display = 'block';
+    if (fallback) fallback.style.display = 'none';
+  };
 
-      if (list) {
+  img.onerror = () => {
+    img.style.display = 'none';
+    if (fallback) fallback.style.display = 'flex';
+  };
 
-        list.innerHTML = rows.map(row => {
+  img.src = data.publicUrl + '?t=' + Date.now();
+}
 
-          const responsibilities = String(row.description || '')
-            .split(/\n+/)
-            .map(x => x.trim())
-            .filter(Boolean)
-            .map(x => `<li>${escapePortfolioHtml(x)}</li>`)
-            .join('');
+async function loadPhotoSettings() {
+  const img = document.getElementById('profilePhoto');
+  if (!img) return;
 
-          return `<article class="job">
+  const { data, error } = await portfolioSupabase
+    .from('profile_settings')
+    .select('photo_zoom, photo_x, photo_y')
+    .eq('id', 1)
+    .maybeSingle();
 
-            <div class="date">
-              ${escapePortfolioHtml(row.start_date || '')}
-              —
-              ${escapePortfolioHtml(row.end_date || '')}
-            </div>
-
-            <div class="jobbox">
-
-              <h3>
-                ${escapePortfolioHtml(row.position || '')}
-              </h3>
-
-              <div class="company">
-                ${escapePortfolioHtml(row.company || '')}
-              </div>
-
-              ${
-                responsibilities
-                  ? `<ul>${responsibilities}</ul>`
-                  : ''
-              }
-
-            </div>
-
-          </article>`;
-
-        }).join('') ||
-        '<div class="job"><div class="jobbox"><h3>No experience added yet.</h3></div></div>';
-      }
-    }
-
-
-    // =========================
-    // LOAD PROFILE PHOTO
-    // =========================
-
-    const {
-      data: photo
-    } = portfolioSupabase.storage
-      .from('profile-photo')
-      .getPublicUrl('profile/profile-photo.webp');
-
-
-    const img = document.getElementById('profilePhoto');
-    const fallback = document.getElementById('avatarFallback');
-
-
-    // =========================
-    // LOAD PHOTO SETTINGS
-    // =========================
-
-    const {
-      data: photoSettings,
-      error: settingsError
-    } = await portfolioSupabase
-      .from('profile_settings')
-      .select('photo_zoom, photo_x, photo_y')
-      .eq('id', 1)
-      .maybeSingle();
-
-
-    if (settingsError) {
-      console.error(
-        'Could not load photo settings:',
-        settingsError
-      );
-    }
-
-
-    // =========================
-    // APPLY PHOTO POSITION
-    // =========================
-
-    if (img) {
-
-      const zoom =
-        Number(photoSettings?.photo_zoom) || 1;
-
-      const x =
-        Number(photoSettings?.photo_x) || 50;
-
-      const y =
-        Number(photoSettings?.photo_y) || 50;
-
-
-      // Convert slider values into movement.
-      const moveX = (x - 50) * 1.5;
-      const moveY = (y - 50) * 1.5;
-
-
-      img.style.objectPosition = '50% 50%';
-
-      img.style.transform =
-        `translate(${moveX}px, ${moveY}px) scale(${zoom})`;
-    }
-
-
-    // =========================
-    // SHOW PROFILE PHOTO
-    // =========================
-
-    if (img && photo?.publicUrl) {
-
-      img.onload = () => {
-
-        img.style.display = 'block';
-
-        if (fallback) {
-          fallback.style.display = 'none';
-        }
-
-      };
-
-
-      img.onerror = () => {
-
-        img.style.display = 'none';
-
-        if (fallback) {
-          fallback.style.display = 'flex';
-        }
-
-      };
-
-
-      img.src =
-        photo.publicUrl +
-        '?t=' +
-        Date.now();
-    }
-
-
-  } catch (e) {
-
-    console.error(
-      'Portfolio CMS load error:',
-      e
-    );
-
+  if (error || !data) {
+    console.warn('Photo settings unavailable to public visitor:', error?.message || 'no settings row');
+    return;
   }
+
+  const zoom = Number(data.photo_zoom) || 1;
+  const x = Number(data.photo_x) || 50;
+  const y = Number(data.photo_y) || 50;
+  const moveX = (x - 50) * 1.5;
+  const moveY = (y - 50) * 1.5;
+
+  img.style.objectPosition = '50% 50%';
+  img.style.transform = `translate(${moveX}px, ${moveY}px) scale(${zoom})`;
 }
 
-
-// =========================
-// HTML ESCAPE
-// =========================
-
-function escapePortfolioHtml(value) {
-
-  return String(value ?? '').replace(
-    /[&<>"']/g,
-
-    c => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;'
-    }[c])
-  );
-
+async function loadPortfolioContent() {
+  await Promise.allSettled([
+    loadExperience(),
+    loadProjects(),
+    loadProfilePhoto(),
+    loadPhotoSettings()
+  ]);
 }
-
 
 loadPortfolioContent();
