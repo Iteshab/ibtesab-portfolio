@@ -42,6 +42,7 @@ async function loadProjects() {
   const { data, error } = await sb
     .from('projects')
     .select('*')
+    .neq('project_name', CMS_SETTINGS_PROJECT)
     .order('sort_order', { ascending: true });
 
   if (error) {
@@ -448,6 +449,7 @@ async function requireAdmin() {
 
   await loadPhoto();
   await loadPhotoSettings();
+  await cmsLoadAll();
   await loadExperiences();
   await loadProjects();
   return true;
@@ -794,6 +796,166 @@ async function deleteExperience(id) {
   await loadExperiences();
 }
 
+
+/* =========================
+   FULL PORTFOLIO CMS
+   ========================= */
+
+const CMS_SETTINGS_PROJECT='__SITE_SETTINGS__';
+
+const CMS_DEFAULTS={
+  profile:{
+    name:'Ibtesab Alam',
+    role:'Network & IT Infrastructure Engineer',
+    eyebrow:'IT Infrastructure & Networking',
+    location:'Uttar Pradesh, India',
+    email:'ibtesabalam7@gmail.com',
+    phone:'+91 99184 12321',
+    linkedin:'https://www.linkedin.com/in/ibtesab-alam/',
+    github:'',
+    heroPrefix:"Hi, I'm",
+    heroName:'Ibtesab Alam.',
+    heroDescription:'Experienced IT professional with 2+ years of experience in technical support, infrastructure management, networking, Windows Server, virtualization and firewall administration.',
+    aboutTitle:'About Me',
+    aboutSubtitle:'Focused on reliable infrastructure, secure networks and business continuity.',
+    aboutText:'Experienced IT professional with over 2 years of expertise in technical support, infrastructure management and end-to-end IT operations. Skilled in hardware and networking troubleshooting, Windows Server environments, Hyper-V, firewall administration and network solutions. I have led infrastructure projects and implemented network monitoring solutions while supporting high availability and operational efficiency.',
+    contactTitle:"Let's connect.",
+    contactText:'For networking, infrastructure or IT support opportunities, feel free to reach out.',
+    footerText:'Network & IT Infrastructure · India',
+    cvPath:'Ibtesab_Alam_CV.pdf'
+  },
+  skills:['Cisco','Zyxel','Fortinet','D-Link','Extreme','Aruba','VLAN','Routing','DHCP','Windows Server 2022','AD DS','DNS','WDS','Hyper-V','VMware','Sophos XG','SonicWall','pfSense','Office 365','Cacti','OP Manager','Wireshark','Zabbix','Linux Fundamentals','Cybersecurity','CCTV'].map((name,i)=>({id:'s'+i,name,order:i+1})),
+  education:[
+    {id:'e1',title:'Bachelor of Science (B.Sc)',institute:'Siddharth University',year:'May 2026',result:'67.00%',details:'',order:1},
+    {id:'e2',title:'DCC — Diploma in Cloud Computing',institute:'Jetking',year:'2024',result:'',details:'',order:2},
+    {id:'e3',title:'Higher Secondary & Secondary',institute:'H.S.C Science / S.S.C',year:'June 2023 / May 2021',result:'58.00% / 78.43%',details:'',order:3}
+  ],
+  appearance:{accent:'#ef476f',accent2:'#19a7a0',bg:'#f4f7f8',card:'#ffffff',text:'#111827',dark:'#0f172a'},
+  sections:{about:true,skills:true,experience:true,projects:true,education:true,contact:true},
+  seo:{title:'Ibtesab Alam | Network Engineer & IT Infrastructure Engineer',description:'Ibtesab Alam is a Network Engineer and IT Infrastructure professional from India with 2+ years of experience in networking, Windows Server, firewalls, virtualization, Microsoft 365 and network monitoring.',keywords:'Ibtesab Alam, Network Engineer, IT Infrastructure Engineer, Network Engineer India, Cisco, Fortinet, Sophos, Windows Server, Hyper-V, Microsoft 365, Cacti, Zabbix',ogTitle:'Ibtesab Alam | Network Engineer & IT Infrastructure Engineer',ogDescription:'Network Engineer and IT Infrastructure professional from India.'}
+};
+
+let cmsSettings=JSON.parse(JSON.stringify(CMS_DEFAULTS));
+let cmsSettingsId=null;
+
+function cmsMerge(raw){
+  const x=JSON.parse(JSON.stringify(CMS_DEFAULTS));
+  if(!raw)return x;
+  x.profile={...x.profile,...(raw.profile||{})};
+  if(Array.isArray(raw.skills))x.skills=raw.skills;
+  if(Array.isArray(raw.education))x.education=raw.education;
+  x.appearance={...x.appearance,...(raw.appearance||{})};
+  x.sections={...x.sections,...(raw.sections||{})};
+  x.seo={...x.seo,...(raw.seo||{})};
+  return x;
+}
+
+async function cmsLoad(){
+  const {data,error}=await sb.from('projects').select('id,description').eq('project_name',CMS_SETTINGS_PROJECT).maybeSingle();
+  if(error)throw error;
+  if(data){
+    cmsSettingsId=data.id;
+    try{cmsSettings=cmsMerge(JSON.parse(data.description||'{}'))}catch(_){cmsSettings=cmsMerge(null)}
+  }else{
+    cmsSettings=cmsMerge(null);
+    await cmsSave();
+  }
+}
+
+async function cmsSave(){
+  const payload={
+    project_name:CMS_SETTINGS_PROJECT,
+    role:'Portfolio CMS Settings',
+    location:'',
+    start_date:'',
+    end_date:'',
+    description:JSON.stringify(cmsSettings),
+    sort_order:999999
+  };
+  let result;
+  if(cmsSettingsId) result=await sb.from('projects').update(payload).eq('id',cmsSettingsId);
+  else{
+    result=await sb.from('projects').insert(payload).select('id').single();
+    if(!result.error)cmsSettingsId=result.data.id;
+  }
+  if(result.error)throw result.error;
+}
+
+function cmsFill(){
+  const p=cmsSettings.profile;
+  const map={
+    siteName:p.name,siteRole:p.role,siteEyebrow:p.eyebrow,siteLocation:p.location,siteEmail:p.email,sitePhone:p.phone,
+    siteLinkedin:p.linkedin,siteGithub:p.github,siteHeroPrefix:p.heroPrefix,siteHeroName:p.heroName,siteHeroDescription:p.heroDescription,
+    aboutTitle:p.aboutTitle,aboutSubtitle:p.aboutSubtitle,aboutText:p.aboutText,contactTitle:p.contactTitle,contactText:p.contactText,
+    footerText:p.footerText,cvPath:p.cvPath,seoTitle:cmsSettings.seo.title,seoDescription:cmsSettings.seo.description,
+    seoKeywords:cmsSettings.seo.keywords,ogTitle:cmsSettings.seo.ogTitle,ogDescription:cmsSettings.seo.ogDescription,
+    accentColor:cmsSettings.appearance.accent,accent2Color:cmsSettings.appearance.accent2,bgColor:cmsSettings.appearance.bg,
+    cardColor:cmsSettings.appearance.card,textColor:cmsSettings.appearance.text,darkColor:cmsSettings.appearance.dark
+  };
+  Object.keys(map).forEach(id=>{if($(id))$(id).value=map[id]||''});
+  ['about','skills','experience','projects','education','contact'].forEach(k=>{const id='show'+k.charAt(0).toUpperCase()+k.slice(1);if($(id))$(id).checked=!!cmsSettings.sections[k]});
+  cmsRenderSkills();cmsRenderEducation();
+}
+
+async function cmsSaveWebsite(e){
+  e.preventDefault();const p=cmsSettings.profile;
+  ['name','role','eyebrow','location','email','phone','linkedin','github','heroPrefix','heroName','heroDescription'].forEach(k=>{const id='site'+k.charAt(0).toUpperCase()+k.slice(1);if($(id))p[k]=$(id).value.trim()});
+  p.aboutTitle=$('aboutTitle').value.trim();p.aboutSubtitle=$('aboutSubtitle').value.trim();p.aboutText=$('aboutText').value.trim();
+  p.contactTitle=$('contactTitle').value.trim();p.contactText=$('contactText').value.trim();p.footerText=$('footerText').value.trim();p.cvPath=$('cvPath').value.trim();
+  try{await cmsSave();msg($('siteMsg'),'Website profile saved.','ok')}catch(e){msg($('siteMsg'),e.message,'error')}
+}
+
+function cmsRenderSkills(){
+  const list=$('skillsAdminList');if(!list)return;
+  const arr=[...cmsSettings.skills].sort((a,b)=>(a.order||1)-(b.order||1));
+  list.innerHTML=arr.map(s=>'<article class="item"><div><h3>'+escapeHtml(s.name)+'</h3><div class="date">Order '+(s.order||1)+'</div></div><div class="actions"><button class="btn" type="button" data-cms-sedit="'+s.id+'">Edit</button><button class="btn danger" type="button" data-cms-sdelete="'+s.id+'">Delete</button></div></article>').join('');
+  list.querySelectorAll('[data-cms-sedit]').forEach(b=>b.onclick=()=>cmsOpenSkill(b.dataset.cmsSedit));
+  list.querySelectorAll('[data-cms-sdelete]').forEach(b=>b.onclick=()=>cmsDeleteSkill(b.dataset.cmsSdelete));
+}
+function cmsOpenSkill(id){const s=cmsSettings.skills.find(x=>x.id===id);$('skillEditor').classList.remove('hidden');$('skillId').value=s?.id||'';$('skillName').value=s?.name||'';$('skillOrder').value=s?.order||cmsSettings.skills.length+1}
+function cmsCloseSkill(){$('skillEditor').classList.add('hidden');$('skillEditor').reset();$('skillOrder').value=1}
+async function cmsSaveSkill(e){e.preventDefault();const id=$('skillId').value||'s'+Date.now();const row={id,name:$('skillName').value.trim(),order:Number($('skillOrder').value)||1};if(!row.name)return;const i=cmsSettings.skills.findIndex(x=>x.id===id);if(i>=0)cmsSettings.skills[i]=row;else cmsSettings.skills.push(row);try{await cmsSave();cmsRenderSkills();cmsCloseSkill();msg($('skillMsg'),'Skill saved.','ok')}catch(e){msg($('skillMsg'),e.message,'error')}}
+async function cmsDeleteSkill(id){if(!confirm('Delete this skill?'))return;cmsSettings.skills=cmsSettings.skills.filter(x=>x.id!==id);try{await cmsSave();cmsRenderSkills()}catch(e){msg($('skillMsg'),e.message,'error')}}
+
+function cmsRenderEducation(){
+  const list=$('educationAdminList');if(!list)return;const arr=[...cmsSettings.education].sort((a,b)=>(a.order||1)-(b.order||1));
+  list.innerHTML=arr.map(e=>'<article class="item"><div><h3>'+escapeHtml(e.title)+'</h3><div class="company">'+escapeHtml(e.institute||'')+'</div><div class="date">'+escapeHtml(e.year||'')+(e.result?' • '+escapeHtml(e.result):'')+'</div></div><div class="actions"><button class="btn" type="button" data-cms-eedit="'+e.id+'">Edit</button><button class="btn danger" type="button" data-cms-edelete="'+e.id+'">Delete</button></div></article>').join('');
+  list.querySelectorAll('[data-cms-eedit]').forEach(b=>b.onclick=()=>cmsOpenEducation(b.dataset.cmsEedit));list.querySelectorAll('[data-cms-edelete]').forEach(b=>b.onclick=()=>cmsDeleteEducation(b.dataset.cmsEdelete));
+}
+function cmsOpenEducation(id){const e=cmsSettings.education.find(x=>x.id===id);$('educationEditor').classList.remove('hidden');$('educationId').value=e?.id||'';$('educationTitle').value=e?.title||'';$('educationInstitute').value=e?.institute||'';$('educationYear').value=e?.year||'';$('educationResult').value=e?.result||'';$('educationDetails').value=e?.details||'';$('educationOrder').value=e?.order||1}
+function cmsCloseEducation(){$('educationEditor').classList.add('hidden');$('educationEditor').reset();$('educationOrder').value=1}
+async function cmsSaveEducation(e){e.preventDefault();const id=$('educationId').value||'e'+Date.now();const row={id,title:$('educationTitle').value.trim(),institute:$('educationInstitute').value.trim(),year:$('educationYear').value.trim(),result:$('educationResult').value.trim(),details:$('educationDetails').value.trim(),order:Number($('educationOrder').value)||1};const i=cmsSettings.education.findIndex(x=>x.id===id);if(i>=0)cmsSettings.education[i]=row;else cmsSettings.education.push(row);try{await cmsSave();cmsRenderEducation();cmsCloseEducation();msg($('educationMsg'),'Education saved.','ok')}catch(e){msg($('educationMsg'),e.message,'error')}}
+async function cmsDeleteEducation(id){if(!confirm('Delete this education item?'))return;cmsSettings.education=cmsSettings.education.filter(x=>x.id!==id);try{await cmsSave();cmsRenderEducation()}catch(e){msg($('educationMsg'),e.message,'error')}}
+
+async function cmsSaveAppearance(e){e.preventDefault();cmsSettings.appearance={accent:$('accentColor').value,accent2:$('accent2Color').value,bg:$('bgColor').value,card:$('cardColor').value,text:$('textColor').value,dark:$('darkColor').value};try{await cmsSave();msg($('appearanceMsg'),'Appearance saved.','ok')}catch(e){msg($('appearanceMsg'),e.message,'error')}}
+async function cmsSaveSections(e){e.preventDefault();['about','skills','experience','projects','education','contact'].forEach(k=>cmsSettings.sections[k]=$('show'+k.charAt(0).toUpperCase()+k.slice(1)).checked);try{await cmsSave();msg($('sectionsMsg'),'Section settings saved.','ok')}catch(e){msg($('sectionsMsg'),e.message,'error')}}
+async function cmsSaveSeo(e){e.preventDefault();cmsSettings.seo={title:$('seoTitle').value.trim(),description:$('seoDescription').value.trim(),keywords:$('seoKeywords').value.trim(),ogTitle:$('ogTitle').value.trim(),ogDescription:$('ogDescription').value.trim()};try{await cmsSave();msg($('seoMsg'),'SEO settings saved.','ok')}catch(e){msg($('seoMsg'),e.message,'error')}}
+
+async function cmsUpload(inputId,path,msgId,label){
+  const file=$(inputId)?.files?.[0];if(!file){msg($(msgId),'Choose '+label+' first.','error');return}
+  if(file.size>6*1024*1024){msg($(msgId),'Maximum file size is 6 MB.','error');return}
+  msg($(msgId),'Uploading…');
+  const {error}=await sb.storage.from(BUCKET).upload(path,file,{contentType:file.type,upsert:true,cacheControl:'3600'});
+  if(error){msg($(msgId),error.message,'error');return}
+  if(path===CV_PATH){cmsSettings.profile.cvPath=CV_PATH;await cmsSave()}
+  if(path===LOGO_PATH){cmsSettings.logoPath=LOGO_PATH;await cmsSave()}
+  msg($(msgId),'Uploaded successfully.','ok');$(inputId).value='';if(path===PHOTO_PATH)await loadPhoto();
+}
+
+async function cmsLoadAll(){await cmsLoad();cmsFill()}
+
+function cmsSetup(){
+  $('siteForm')?.addEventListener('submit',cmsSaveWebsite);
+  $('appearanceForm')?.addEventListener('submit',cmsSaveAppearance);
+  $('sectionsForm')?.addEventListener('submit',cmsSaveSections);
+  $('seoForm')?.addEventListener('submit',cmsSaveSeo);
+  $('newSkill')?.addEventListener('click',()=>cmsOpenSkill(''));$('cancelSkill')?.addEventListener('click',cmsCloseSkill);$('skillEditor')?.addEventListener('submit',cmsSaveSkill);
+  $('newEducation')?.addEventListener('click',()=>cmsOpenEducation(''));$('cancelEducation')?.addEventListener('click',cmsCloseEducation);$('educationEditor')?.addEventListener('submit',cmsSaveEducation);
+  $('uploadPhoto')?.addEventListener('click',()=>cmsUpload('photoInput',PHOTO_PATH,'photoMsg','an image'));
+  $('uploadLogo')?.addEventListener('click',()=>cmsUpload('logoInput',LOGO_PATH,'logoMsg','a logo image'));
+  $('uploadCv')?.addEventListener('click',()=>cmsUpload('cvInput',CV_PATH,'cvMsg','a PDF'));
+}
+
 /* =========================
    Password recovery
    ========================= */
@@ -879,7 +1041,7 @@ function init() {
   setupExperienceEditor();
   setupProjectEditor();
   setupPasswordRecovery();
-
+  cmsSetup();
   requireAdmin();
 }
 
