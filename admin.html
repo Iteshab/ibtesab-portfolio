@@ -19,7 +19,7 @@
     <div>
       <div class="eyebrow">PORTFOLIO CMS</div>
       <h1>Ibtesab Admin</h1>
-      <p>Manage your profile photo and professional experience.</p>
+      <p>Manage your complete portfolio from the web.</p>
     </div>
 
     <button id="logoutBtn" class="btn ghost hidden">
@@ -202,7 +202,57 @@
     </section>
 
 
-    <!-- EXPERIENCE -->
+    <section class="panel">
+    <div class="sectionHead"><div><h2>Website & Profile</h2><p class="muted">Manage your main portfolio information without editing code.</p></div></div>
+    <form id="siteForm" class="formGrid">
+      <label>Full Name<input id="siteName" required></label>
+      <label>Professional Role<input id="siteRole" required></label>
+      <label>Eyebrow<input id="siteEyebrow"></label>
+      <label>Location<input id="siteLocation"></label>
+      <label>Email<input id="siteEmail" type="email"></label>
+      <label>Phone<input id="sitePhone"></label>
+      <label>LinkedIn URL<input id="siteLinkedin"></label>
+      <label>GitHub URL<input id="siteGithub"></label>
+      <label>Hero Prefix<input id="siteHeroPrefix"></label>
+      <label>Hero Name<input id="siteHeroName"></label>
+      <label class="full">Hero Description<textarea id="siteHeroDescription" rows="3"></textarea></label>
+      <label>About Title<input id="aboutTitle"></label>
+      <label>About Subtitle<input id="aboutSubtitle"></label>
+      <label class="full">About Text<textarea id="aboutText" rows="6"></textarea></label>
+      <label>Contact Title<input id="contactTitle"></label>
+      <label>Contact Text<input id="contactText"></label>
+      <label>Footer Text<input id="footerText"></label>
+      <label>CV File Path<input id="cvPath"></label>
+      <div class="full actions"><button class="btn primary" type="submit">Save Website Profile</button></div>
+      <div id="siteMsg" class="msg full"></div>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="sectionHead"><div><h2>Skills</h2><p class="muted">Add, edit, delete and reorder skills.</p></div><button id="newSkill" class="btn primary" type="button">+ Add Skill</button></div>
+    <div id="skillsAdminList" class="list"></div>
+    <form id="skillEditor" class="inlineEditor hidden">
+      <input id="skillId" type="hidden"><input id="skillName" placeholder="Skill name" required><input id="skillOrder" type="number" min="1" value="1">
+      <button class="btn primary" type="submit">Save</button><button id="cancelSkill" class="btn ghost" type="button">Cancel</button>
+    </form>
+    <div id="skillMsg" class="msg"></div>
+  </section>
+
+  <section class="panel">
+    <div class="sectionHead"><div><h2>Education & Certification</h2><p class="muted">Manage education cards.</p></div><button id="newEducation" class="btn primary" type="button">+ Add Education</button></div>
+    <div id="educationAdminList" class="list"></div>
+    <form id="educationEditor" class="formGrid hidden">
+      <input id="educationId" type="hidden">
+      <label>Title<input id="educationTitle" required></label><label>Institute<input id="educationInstitute"></label>
+      <label>Year / Date<input id="educationYear"></label><label>Result / Grade<input id="educationResult"></label>
+      <label class="full">Details<textarea id="educationDetails" rows="3"></textarea></label>
+      <label>Display Order<input id="educationOrder" type="number" min="1" value="1"></label>
+      <div class="full actions"><button class="btn primary" type="submit">Save Education</button><button id="cancelEducation" class="btn ghost" type="button">Cancel</button></div>
+    </form>
+    <div id="educationMsg" class="msg"></div>
+  </section>
+
+  <!-- EXPERIENCE -->
 
     <section class="panel">
 
@@ -312,6 +362,41 @@
   </form>
 
 </section>
+
+  <section class="panel">
+    <div class="sectionHead"><div><h2>Appearance & Sections</h2><p class="muted">Control colors and which sections are visible.</p></div></div>
+    <form id="appearanceForm" class="formGrid">
+      <label>Accent<input id="accentColor" type="color"></label><label>Secondary Accent<input id="accent2Color" type="color"></label>
+      <label>Background<input id="bgColor" type="color"></label><label>Card<input id="cardColor" type="color"></label>
+      <label>Text<input id="textColor" type="color"></label><label>Dark<input id="darkColor" type="color"></label>
+      <div class="full actions"><button class="btn primary" type="submit">Save Appearance</button></div><div id="appearanceMsg" class="msg full"></div>
+    </form>
+    <hr>
+    <form id="sectionsForm" class="checkGrid">
+      <label class="check"><input id="showAbout" type="checkbox"> About</label><label class="check"><input id="showSkills" type="checkbox"> Skills</label>
+      <label class="check"><input id="showExperience" type="checkbox"> Experience</label><label class="check"><input id="showProjects" type="checkbox"> Projects</label>
+      <label class="check"><input id="showEducation" type="checkbox"> Education</label><label class="check"><input id="showContact" type="checkbox"> Contact</label>
+      <div class="full actions"><button class="btn primary" type="submit">Save Section Settings</button></div><div id="sectionsMsg" class="msg full"></div>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="sectionHead"><div><h2>SEO</h2><p class="muted">Manage page title and search/social descriptions.</p></div></div>
+    <form id="seoForm" class="formGrid">
+      <label class="full">Page Title<input id="seoTitle"></label><label class="full">Meta Description<textarea id="seoDescription" rows="3"></textarea></label>
+      <label class="full">Keywords<input id="seoKeywords"></label><label>OG Title<input id="ogTitle"></label><label>OG Description<input id="ogDescription"></label>
+      <div class="full actions"><button class="btn primary" type="submit">Save SEO</button></div><div id="seoMsg" class="msg full"></div>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="sectionHead"><div><h2>Media</h2><p class="muted">Upload profile photo, logo and CV directly from the browser.</p></div></div>
+    <div class="mediaGrid">
+      <div class="mediaCard"><h3>Profile Photo</h3><input id="photoInput" type="file" accept="image/png,image/jpeg,image/webp"><button id="uploadPhoto" class="btn primary" type="button">Upload Photo</button><div id="photoMsg" class="msg"></div></div>
+      <div class="mediaCard"><h3>Logo</h3><input id="logoInput" type="file" accept="image/png,image/jpeg,image/webp"><button id="uploadLogo" class="btn primary" type="button">Upload Logo</button><div id="logoMsg" class="msg"></div></div>
+      <div class="mediaCard"><h3>CV</h3><input id="cvInput" type="file" accept=".pdf,application/pdf"><button id="uploadCv" class="btn primary" type="button">Upload CV</button><div id="cvMsg" class="msg"></div></div>
+    </div>
+  </section>
 
     <!-- EXPERIENCE EDITOR -->
 
