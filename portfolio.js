@@ -1,308 +1,37 @@
-const SUPABASE_URL = window.SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = window.SUPABASE_PUBLISHABLE_KEY;
-
-const portfolioSupabase = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
-);
-
-function escapePortfolioHtml(value) {
-  return String(value ?? '').replace(
-    /[&<>"']/g,
-    c => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;'
-    }[c])
-  );
+const SUPABASE_URL=window.SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY=window.SUPABASE_PUBLISHABLE_KEY;
+const portfolioSupabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const CMS_SETTINGS_PROJECT='__SITE_SETTINGS__';
+const DEFAULT={
+ profile:{name:'Ibtesab Alam',role:'Network & IT Infrastructure Engineer',eyebrow:'IT Infrastructure & Networking',location:'Uttar Pradesh, India',email:'ibtesabalam7@gmail.com',phone:'+91 99184 12321',linkedin:'https://www.linkedin.com/in/ibtesab-alam/',github:'',heroPrefix:"Hi, I'm",heroName:'Ibtesab Alam.',heroDescription:'Experienced IT professional with 2+ years of experience in technical support, infrastructure management, networking, Windows Server, virtualization and firewall administration.',aboutTitle:'About Me',aboutSubtitle:'Focused on reliable infrastructure, secure networks and business continuity.',aboutText:'Experienced IT professional with over 2 years of expertise in technical support, infrastructure management and end-to-end IT operations.',contactTitle:"Let's connect.",contactText:'For networking, infrastructure or IT support opportunities, feel free to reach out.',footerText:'Network & IT Infrastructure · India',cvPath:'Ibtesab_Alam_CV.pdf'},
+ skills:[],education:[],appearance:{accent:'#ef476f',accent2:'#19a7a0',bg:'#f4f7f8',card:'#ffffff',text:'#111827',dark:'#0f172a'},sections:{about:true,skills:true,experience:true,projects:true,education:true,contact:true},seo:{}
+};
+let settings=JSON.parse(JSON.stringify(DEFAULT));
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function merge(raw){const x=JSON.parse(JSON.stringify(DEFAULT));if(!raw)return x;x.profile={...x.profile,...(raw.profile||{})};x.skills=Array.isArray(raw.skills)?raw.skills:x.skills;x.education=Array.isArray(raw.education)?raw.education:x.education;x.appearance={...x.appearance,...(raw.appearance||{})};x.sections={...x.sections,...(raw.sections||{})};x.seo={...x.seo,...(raw.seo||{})};x.logoPath=raw.logoPath||'';return x}
+async function loadSettings(){const {data,error}=await portfolioSupabase.from('projects').select('description').eq('project_name',CMS_SETTINGS_PROJECT).maybeSingle();if(!error&&data){try{settings=merge(JSON.parse(data.description||'{}'))}catch(_){}}}
+function applyText(){
+ const p=settings.profile;
+ const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
+ set('heroEyebrow',p.eyebrow);set('heroPrefix',p.heroPrefix);set('heroName',p.heroName);set('heroDescription',p.heroDescription);
+ set('profileName',p.name);set('profileRole',p.role);set('profileLocation',p.location);set('profileEmail',p.email);set('profilePhone',p.phone);
+ set('aboutTitle',p.aboutTitle);set('aboutSubtitle',p.aboutSubtitle);set('aboutText',p.aboutText);set('contactTitle',p.contactTitle);set('contactText',p.contactText);set('footerText',p.footerText);
+ const email=document.getElementById('emailLink'),phone=document.getElementById('phoneLink'),linkedin=document.getElementById('linkedinLink'),github=document.getElementById('githubLink'),cv=document.getElementById('cvLink');
+ if(email){email.href='mailto:'+p.email;email.title='Email'} if(phone){phone.href='tel:'+p.phone.replace(/[^+\d]/g,'');phone.title='Call'} if(linkedin){linkedin.href=p.linkedin||'#';linkedin.style.display=p.linkedin?'grid':'none'} if(github){github.href=p.github||'#';github.style.display=p.github?'grid':'none'} if(cv){cv.href=p.cvPath||'Ibtesab_Alam_CV.pdf'}
+ document.title=settings.seo.title||p.name+' | '+p.role;
+ const desc=document.querySelector('meta[name="description"]');if(desc&&settings.seo.description)desc.content=settings.seo.description;
+ const keys=document.querySelector('meta[name="keywords"]');if(keys&&settings.seo.keywords)keys.content=settings.seo.keywords;
+ const ogt=document.querySelector('meta[property="og:title"]');if(ogt)ogt.content=settings.seo.ogTitle||settings.seo.title||document.title;
+ const ogd=document.querySelector('meta[property="og:description"]');if(ogd)ogd.content=settings.seo.ogDescription||settings.seo.description||'';
 }
-
-async function loadExperience() {
-  const list = document.getElementById('experienceList');
-  if (!list) return;
-
-  const { data, error } = await portfolioSupabase
-    .from('experience')
-    .select('*')
-    .order('sort_order', { ascending: true });
-
-  if (error) {
-    console.error('Experience load error:', error);
-
-    list.innerHTML =
-      '<div class="job"><div class="jobbox"><h3>Unable to load experience.</h3><div class="company">Please check the Supabase experience table and public read policy.</div></div></div>';
-
-    return;
-  }
-
-  if (!data || data.length === 0) {
-    list.innerHTML =
-      '<div class="job"><div class="jobbox"><h3>No experience added yet.</h3></div></div>';
-
-    return;
-  }
-
-  list.innerHTML = data.map(row => {
-
-    const responsibilities = String(row.description || '')
-      .split(/\n+/)
-      .map(x => x.trim())
-      .filter(Boolean)
-      .map(x => `<li>${escapePortfolioHtml(x)}</li>`)
-      .join('');
-
-    return `
-      <article class="job">
-
-        <div class="date">
-          ${escapePortfolioHtml(row.start_date || '')}
-          —
-          ${escapePortfolioHtml(row.end_date || '')}
-        </div>
-
-        <div class="jobbox">
-
-          <h3>
-            ${escapePortfolioHtml(row.position || '')}
-          </h3>
-
-          <div class="company">
-            ${escapePortfolioHtml(row.company || '')}
-          </div>
-
-          ${
-            responsibilities
-              ? `<ul>${responsibilities}</ul>`
-              : ''
-          }
-
-        </div>
-
-      </article>
-    `;
-
-  }).join('');
-}
-
-
-async function loadProjects() {
-
-  const list = document.getElementById('projectsList');
-
-  if (!list) return;
-
-  const { data, error } = await portfolioSupabase
-    .from('projects')
-    .select('*')
-    .order('sort_order', { ascending: true });
-
-  if (error) {
-
-    console.error('Projects load error:', error);
-
-    list.innerHTML =
-      '<div class="card project"><h3>Unable to load projects.</h3><p>Please check the Supabase projects table and public read policy.</p></div>';
-
-    return;
-  }
-
-  if (!data || data.length === 0) {
-
-    list.innerHTML =
-      '<div class="card project"><h3>No projects added yet.</h3><p>Projects will appear here when added from the admin panel.</p></div>';
-
-    return;
-  }
-
-  list.innerHTML = data.map((project, index) => {
-
-    const responsibilities = String(project.description || '')
-      .split(/\n+/)
-      .map(x => x.trim())
-      .filter(Boolean)
-      .map(x => `<li>${escapePortfolioHtml(x)}</li>`)
-      .join('');
-
-    const number = String(index + 1).padStart(2, '0');
-
-    return `
-      <article class="card project">
-
-        <div class="num">
-          ${number} / PROJECT
-        </div>
-
-        <h3>
-          ${escapePortfolioHtml(project.project_name || '')}
-        </h3>
-
-        ${
-          project.role
-            ? `
-              <div class="company">
-                ${escapePortfolioHtml(project.role)}
-              </div>
-            `
-            : ''
-        }
-
-        ${
-          project.location ||
-          project.start_date ||
-          project.end_date
-
-            ? `
-              <div class="date">
-
-                ${escapePortfolioHtml(project.location || '')}
-
-                ${
-                  project.location &&
-                  (project.start_date || project.end_date)
-                    ? ' • '
-                    : ''
-                }
-
-                ${escapePortfolioHtml(project.start_date || '')}
-
-                ${
-                  project.start_date || project.end_date
-                    ? ' — '
-                    : ''
-                }
-
-                ${escapePortfolioHtml(project.end_date || '')}
-
-              </div>
-            `
-
-            : ''
-        }
-
-        ${
-          responsibilities
-            ? `<ul>${responsibilities}</ul>`
-            : ''
-        }
-
-      </article>
-    `;
-
-  }).join('');
-}
-
-
-async function loadProfilePhoto() {
-
-  const img = document.getElementById('profilePhoto');
-
-  const fallback =
-    document.getElementById('avatarFallback');
-
-  if (!img) return;
-
-  const { data } =
-    portfolioSupabase.storage
-      .from('profile-photo')
-      .getPublicUrl(
-        'profile/profile-photo.webp'
-      );
-
-  if (!data?.publicUrl) return;
-
-  img.onload = () => {
-
-    img.style.display = 'block';
-
-    if (fallback) {
-      fallback.style.display = 'none';
-    }
-
-  };
-
-  img.onerror = () => {
-
-    img.style.display = 'none';
-
-    if (fallback) {
-      fallback.style.display = 'flex';
-    }
-
-  };
-
-  img.src =
-    data.publicUrl +
-    '?t=' +
-    Date.now();
-}
-
-
-async function loadPhotoSettings() {
-
-  const img =
-    document.getElementById('profilePhoto');
-
-  if (!img) return;
-
-  const { data, error } =
-    await portfolioSupabase
-      .from('profile_settings')
-      .select(
-        'photo_zoom, photo_x, photo_y'
-      )
-      .eq('id', 1)
-      .maybeSingle();
-
-  if (error || !data) {
-
-    console.warn(
-      'Photo settings could not be loaded. Using default position.',
-      error
-    );
-
-    return;
-  }
-
-  const zoom =
-    Number(data.photo_zoom) || 1;
-
-  const x =
-    Number(data.photo_x) || 50;
-
-  const y =
-    Number(data.photo_y) || 50;
-
-  const moveX =
-    (x - 50) * 1.5;
-
-  const moveY =
-    (y - 50) * 1.5;
-
-  img.style.objectPosition =
-    '50% 50%';
-
-  img.style.transform =
-    `translate(${moveX}px, ${moveY}px) scale(${zoom})`;
-}
-
-
-async function loadPortfolioContent() {
-
-  await Promise.allSettled([
-
-    loadExperience(),
-
-    loadProjects(),
-
-    loadProfilePhoto(),
-
-    loadPhotoSettings()
-
-  ]);
-
-}
-
-
-loadPortfolioContent();
+function applyAppearance(){const a=settings.appearance;const root=document.documentElement;root.style.setProperty('--accent',a.accent);root.style.setProperty('--accent2',a.accent2);root.style.setProperty('--bg',a.bg);root.style.setProperty('--card',a.card);root.style.setProperty('--text',a.text);root.style.setProperty('--dark',a.dark)}
+function applySections(){const map={about:'about',skills:'skills',experience:'experience',projects:'projects',education:'education',contact:'contact'};Object.keys(map).forEach(k=>{const e=document.getElementById(map[k]);if(e)e.style.display=settings.sections[k]?'':'none'})}
+async function loadSkills(){const list=document.getElementById('skillsList');if(!list)return;const arr=[...settings.skills].sort((a,b)=>(a.order||1)-(b.order||1));list.innerHTML=arr.map(s=>'<span class="tag">'+esc(s.name)+'</span>').join('')}
+async function loadEducation(){const list=document.getElementById('educationList');if(!list)return;const arr=[...settings.education].sort((a,b)=>(a.order||1)-(b.order||1));list.innerHTML=arr.map(e=>'<div class="card"><h3>'+esc(e.title)+'</h3><p>'+esc(e.institute||'')+(e.year?'<br>'+esc(e.year):'')+(e.result?' · '+esc(e.result):'')+(e.details?'<br>'+esc(e.details):'')+'</p></div>').join('')}
+async function loadExperience(){const list=document.getElementById('experienceList');if(!list)return;const {data,error}=await portfolioSupabase.from('experience').select('*').order('sort_order',{ascending:true});if(error){console.error(error);return}if(!data?.length){list.innerHTML='<div class="job"><div class="jobbox"><h3>No experience added yet.</h3></div></div>';return}list.innerHTML=data.map(r=>{const li=String(r.description||'').split(/\n+/).map(x=>x.trim()).filter(Boolean).map(x=>'<li>'+esc(x)+'</li>').join('');return '<article class="job"><div class="date">'+esc(r.start_date||'')+' — '+esc(r.end_date||'')+'</div><div class="jobbox"><h3>'+esc(r.position||'')+'</h3><div class="company">'+esc(r.company||'')+'</div>'+(li?'<ul>'+li+'</ul>':'')+'</div></article>'}).join('')}
+async function loadProjects(){const list=document.getElementById('projectsList');if(!list)return;const {data,error}=await portfolioSupabase.from('projects').select('*').neq('project_name',CMS_SETTINGS_PROJECT).order('sort_order',{ascending:true});if(error){console.error(error);return}if(!data?.length){list.innerHTML='<div class="card project"><h3>No projects added yet.</h3></div>';return}list.innerHTML=data.map((r,i)=>{const li=String(r.description||'').split(/\n+/).map(x=>x.trim()).filter(Boolean).map(x=>'<li>'+esc(x)+'</li>').join('');return '<article class="card project"><div class="num">'+String(i+1).padStart(2,'0')+' / PROJECT</div><h3>'+esc(r.project_name||'')+'</h3>'+(r.role?'<div class="company">'+esc(r.role)+'</div>':'')+((r.location||r.start_date||r.end_date)?'<div class="date">'+esc(r.location||'')+(r.location&&(r.start_date||r.end_date)?' • ':'')+esc(r.start_date||'')+(r.start_date||r.end_date?' — ':'')+esc(r.end_date||'')+'</div>':'')+(li?'<ul>'+li+'</ul>':'')+'</article>'}).join('')}
+async function loadProfilePhoto(){const img=document.getElementById('profilePhoto'),fallback=document.getElementById('avatarFallback');if(!img)return;const {data}=portfolioSupabase.storage.from('profile-photo').getPublicUrl('profile/profile-photo.webp');img.onload=()=>{img.style.display='block';if(fallback)fallback.style.display='none';loadPhotoSettings()};img.onerror=()=>{img.style.display='none';if(fallback)fallback.style.display='flex'};img.src=data.publicUrl+'?t='+Date.now()}
+async function loadLogo(){const img=document.querySelector('.brand img');if(!img)return;if(!settings.logoPath)return;const {data}=portfolioSupabase.storage.from('profile-photo').getPublicUrl(settings.logoPath);if(data?.publicUrl)img.src=data.publicUrl+'?t='+Date.now()}
+async function loadPhotoSettings(){const img=document.getElementById('profilePhoto');if(!img)return;const {data}=await portfolioSupabase.from('profile_settings').select('photo_zoom,photo_x,photo_y').eq('id',1).maybeSingle();if(!data)return;const z=Number(data.photo_zoom)||1,x=Number(data.photo_x)||50,y=Number(data.photo_y)||50;img.style.transform='translate('+((x-50)*1.5)+'px,'+((y-50)*1.5)+'px) scale('+z+')'}
+async function main(){await loadSettings();applyText();applyAppearance();applySections();await Promise.allSettled([loadSkills(),loadEducation(),loadExperience(),loadProjects(),loadProfilePhoto(),loadLogo()]);}
+main();
