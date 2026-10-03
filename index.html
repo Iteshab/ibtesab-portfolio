@@ -22,22 +22,46 @@
 
   <script type="application/ld+json">
   {
-  "@context": "https://schema.org",
-  "@type": "Person",
-  "name": "Ibtesab Alam",
-  "url": "https://ibtesab-alam.vercel.app/",
-  "jobTitle": "Network Engineer",
-  "description": "Ibtesab Alam is a Network Engineer and IT Infrastructure professional from India with 2+ years of experience in networking, Windows Server, firewalls, virtualization, Microsoft 365 and network monitoring.",
-  "email": "mailto:ibtesabalam7@gmail.com",
-  "telephone": "+91-99184-12321",
-  "sameAs": [
-    "https://www.linkedin.com/in/ibtesab-alam/"
-  ],
-  "address": {
-    "@type": "PostalAddress",
-    "addressCountry": "IN"
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://ibtesab-alam.vercel.app/#website",
+        "name": "Ibtesab Alam",
+        "alternateName": [
+          "Ibtesab Alam Portfolio",
+          "ibtesab-alam.vercel.app"
+        ],
+        "url": "https://ibtesab-alam.vercel.app/"
+      },
+      {
+        "@type": "ProfilePage",
+        "@id": "https://ibtesab-alam.vercel.app/#profile",
+        "url": "https://ibtesab-alam.vercel.app/",
+        "name": "Ibtesab Alam | Network Engineer & IT Infrastructure Engineer",
+        "mainEntity": {
+          "@id": "https://ibtesab-alam.vercel.app/#person"
+        }
+      },
+      {
+        "@type": "Person",
+        "@id": "https://ibtesab-alam.vercel.app/#person",
+        "name": "Ibtesab Alam",
+        "url": "https://ibtesab-alam.vercel.app/",
+        "jobTitle": "Network Engineer",
+        "description": "Ibtesab Alam is a Network Engineer and IT Infrastructure professional from India with 2+ years of experience in networking, Windows Server, firewalls, virtualization, Microsoft 365 and network monitoring.",
+        "email": "mailto:ibtesabalam7@gmail.com",
+        "telephone": "+91-99184-12321",
+        "sameAs": [
+          "https://www.linkedin.com/in/ibtesab-alam/"
+        ],
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "IN"
+        }
+      }
+    ]
   }
-}
   </script>
   <meta name="google-site-verification" content="SYs1q9B-iTP225VCOFAJdK2cNu0eCWHPjzW1V7CG4CU" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
