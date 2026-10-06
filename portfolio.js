@@ -98,11 +98,11 @@ const PROJECTS_FALLBACK=[
 ];
 
 function projectCompany(row){
-  const m=String(row?.description||'').match(/^\\[Company:\\s*([^\\]]+)\\]\\s*/i);
+  const m=String(row?.description||'').match(/^\[Company:\s*([^\]]+)\]\s*/i);
   return (m&&m[1].trim()) || row?.company || '';
 }
 function projectDescription(row){
-  return String(row?.description||'').replace(/^\\[Company:\\s*[^\\]]+\\]\\s*/i,'').trim();
+  return String(row?.description||'').replace(/^\[Company:\s*[^\]]+\]\s*/i,'').trim();
 }
 
 async function renderProjects(){
