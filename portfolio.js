@@ -60,7 +60,8 @@ async function renderExperience() {
   const render = rows => {
     list.innerHTML = rows.map(r => {
       const bullets = String(r.description || '')
-        .split(/\r?\n+/)
+        .replace(/\\\\n/g, '\\n')
+        .split(/\\r?\\n+/)
         .map(x => x.trim())
         .filter(Boolean)
         .map(x => '<li>' + esc(x) + '</li>')
@@ -77,6 +78,10 @@ async function renderExperience() {
     }).join('');
   };
 
+  // Render the built-in experience immediately. This prevents a Supabase
+  // connection/RLS/network problem from leaving the public section blank.
+  render(EXPERIENCE_FALLBACK);
+
   try {
     const { data, error } = await sb
       .from('experience')
@@ -86,16 +91,16 @@ async function renderExperience() {
 
     if (error) {
       console.error('Experience database load error:', error);
-      render(EXPERIENCE_FALLBACK);
       return;
     }
 
-    render(data && data.length ? data : EXPERIENCE_FALLBACK);
+    // Replace the fallback only when Supabase successfully returns rows.
+    if (Array.isArray(data) && data.length) render(data);
   } catch (error) {
     console.error('Experience load error:', error);
-    render(EXPERIENCE_FALLBACK);
   }
 }
+
 async function renderProjects(){const s=sectionByTitle('featured'),grid=s?.querySelector('.grid');if(!grid)return;const {data,error}=await sb.from('projects').select('*').neq('project_name',CMS).order('sort_order',{ascending:true});if(error)return;grid.innerHTML=(data||[]).map((r,i)=>'<article class="card project"><div class="num">'+String(i+1).padStart(2,'0')+' / PROJECT</div><h3>'+esc(r.project_name)+'</h3>'+(r.role?'<div class="company">'+esc(r.role)+'</div>':'')+(r.location||r.start_date||r.end_date?'<div class="date">'+esc(r.location||'')+(r.location&&(r.start_date||r.end_date)?' • ':'')+esc(r.start_date||'')+(r.start_date||r.end_date?' — ':'')+esc(r.end_date||'')+'</div>':'')+'<ul>'+String(r.description||'').split(/\n+/).filter(Boolean).map(x=>'<li>'+esc(x.trim())+'</li>').join('')+'</ul></article>').join('')}
 async function media(){const img=document.getElementById('profilePhoto');if(img){const {data}=sb.storage.from('profile-photo').getPublicUrl('profile/profile-photo.webp');img.onload=()=>{img.style.display='block';document.getElementById('avatarFallback')?.style.setProperty('display','none')};img.onerror=()=>{img.style.display='none'};img.src=data.publicUrl+'?t='+Date.now();const {data:s}=await sb.from('profile_settings').select('photo_zoom,photo_x,photo_y').eq('id',1).maybeSingle();if(s)img.style.transform='translate('+((Number(s.photo_x||50)-50)*1.5)+'px,'+((Number(s.photo_y||50)-50)*1.5)+'px) scale('+(Number(s.photo_zoom)||1)+')'}const logo=document.querySelector('.brand img');if(logo&&S.logoPath){const {data}=sb.storage.from('profile-photo').getPublicUrl(S.logoPath);if(data?.publicUrl)logo.src=data.publicUrl+'?t='+Date.now()}}
 async function main() {
