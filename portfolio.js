@@ -46,15 +46,35 @@ async function renderExperience() {
   const list = document.getElementById('experienceList');
   if (!list) return;
 
-  const render = rows => {
+  const render = (rows, projects=[]) => {
+    const projectGroups = {};
+    projects.forEach(r => {
+      const company = projectCompany(r);
+      if (company) (projectGroups[company] ||= []).push(r);
+    });
+
     list.innerHTML = rows.map(r => {
       const bullets = String(r.description || '')
-        .replace(/\\\\n/g, '\\n')
+        .replace(/\\n/g, '\\n')
         .split(/\\r?\\n+/)
         .map(x => x.trim())
         .filter(Boolean)
         .map(x => '<li>' + esc(x) + '</li>')
         .join('');
+
+      const companyProjects = projectGroups[String(r.company || '').trim()] || [];
+      const projectsHtml = companyProjects.length
+        ? '<div class="experienceProjects"><div class="experienceProjectsTitle">Projects at ' +
+          esc(r.company || '') + ' <span class="projectCount">' +
+          companyProjects.length + ' ' + (companyProjects.length === 1 ? 'project' : 'projects') +
+          '</span></div><div class="experienceProjectList">' +
+          companyProjects.map(p =>
+            '<div class="experienceProject"><strong>' + esc(p.project_name || '') +
+            '</strong>' + (projectDescription(p) ? '<span>' + esc(projectDescription(p)) + '</span>' : '') +
+            '</div>'
+          ).join('') +
+          '</div></div>'
+        : '';
 
       return '<article class="job">' +
         '<div class="date">' + esc(r.start_date || '') + ' — ' + esc(r.end_date || 'Present') + '</div>' +
@@ -62,29 +82,28 @@ async function renderExperience() {
           '<h3>' + esc(r.position || '') + '</h3>' +
           '<div class="company">' + esc(r.company || '') + (r.location ? ' · ' + esc(r.location) : '') + '</div>' +
           (bullets ? '<ul>' + bullets + '</ul>' : '') +
+          projectsHtml +
         '</div>' +
       '</article>';
     }).join('');
   };
 
-  // Render the built-in experience immediately. This prevents a Supabase
-  // connection/RLS/network problem from leaving the public section blank.
-  render(EXPERIENCE_FALLBACK);
+  render(EXPERIENCE_FALLBACK, PROJECTS_FALLBACK);
 
   try {
-    const { data, error } = await sb
-      .from('experience')
-      .select('id,company,position,start_date,end_date,description,sort_order')
-      .order('sort_order', { ascending: true })
-      .order('id', { ascending: true });
+    const [{data: experienceData, error: experienceError}, {data: projectData, error: projectError}] =
+      await Promise.all([
+        sb.from('experience').select('id,company,position,start_date,end_date,description,sort_order').order('sort_order', {ascending:true}).order('id', {ascending:true}),
+        sb.from('projects').select('id,project_name,role,location,start_date,end_date,description,sort_order').neq('project_name',CMS).order('sort_order', {ascending:true})
+      ]);
 
-    if (error) {
-      console.error('Experience database load error:', error);
+    if (experienceError) {
+      console.error('Experience database load error:', experienceError);
       return;
     }
 
-    // Replace the fallback only when Supabase successfully returns rows.
-    if (Array.isArray(data) && data.length) render(data);
+    const projects = projectError ? PROJECTS_FALLBACK : (Array.isArray(projectData) && projectData.length ? projectData : PROJECTS_FALLBACK);
+    if (Array.isArray(experienceData) && experienceData.length) render(experienceData, projects);
   } catch (error) {
     console.error('Experience load error:', error);
   }
