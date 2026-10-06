@@ -101,7 +101,24 @@ async function renderExperience() {
   }
 }
 
-async function renderProjects(){const s=sectionByTitle('featured'),grid=s?.querySelector('.grid');if(!grid)return;const {data,error}=await sb.from('projects').select('*').neq('project_name',CMS).order('sort_order',{ascending:true});if(error)return;grid.innerHTML=(data||[]).map((r,i)=>'<article class="card project"><div class="num">'+String(i+1).padStart(2,'0')+' / PROJECT</div><h3>'+esc(r.project_name)+'</h3>'+(r.role?'<div class="company">'+esc(r.role)+'</div>':'')+(r.location||r.start_date||r.end_date?'<div class="date">'+esc(r.location||'')+(r.location&&(r.start_date||r.end_date)?' • ':'')+esc(r.start_date||'')+(r.start_date||r.end_date?' — ':'')+esc(r.end_date||'')+'</div>':'')+'<ul>'+String(r.description||'').split(/\n+/).filter(Boolean).map(x=>'<li>'+esc(x.trim())+'</li>').join('')+'</ul></article>').join('')}
+const PROJECTS_FALLBACK=[
+  {project_name:'IT Infrastructure Setup',role:'GREENFIELD',location:'Pharmaceutical Facility',start_date:'2026',end_date:'Present',description:'End-to-end Greenfield infrastructure setup for a new pharmaceutical facility, including requirements, architecture, BOQ, vendor coordination and server/firewall/network deployment.',sort_order:1},
+  {project_name:'Enterprise Network Management',role:'Network Engineer',location:'Enterprise Environments',start_date:'2024',end_date:'Present',description:'Network design, router and switch configuration, VLAN/IP configuration, routing, connectivity troubleshooting and firewall management across enterprise environments.',sort_order:2},
+  {project_name:'Network Monitoring',role:'Network Engineer',location:'Enterprise Infrastructure',start_date:'2024',end_date:'Present',description:'Implementation and operational use of Cacti, OP Manager, Wireshark and Zabbix for monitoring and troubleshooting network infrastructure.',sort_order:3},
+  {project_name:'Windows Server & Virtualization',role:'IT Infrastructure Engineer',location:'Server Infrastructure',start_date:'2024',end_date:'Present',description:'Windows Server 2022 administration including AD DS, DNS, DHCP and WDS, along with Hyper-V/VMware virtualization support.',sort_order:4}
+];
+
+async function renderProjects(){
+  const s=sectionByTitle('featured'),grid=s?.querySelector('.grid');
+  if(!grid)return;
+  const render=rows=>{grid.innerHTML=(rows||[]).map((r,i)=>'<article class="card project"><div class="num">'+String(i+1).padStart(2,'0')+' / PROJECT</div><h3>'+esc(r.project_name||'')+'</h3>'+(r.role?'<div class="company">'+esc(r.role)+'</div>':'')+(r.location||r.start_date||r.end_date?'<div class="date">'+esc(r.location||'')+(r.location&&(r.start_date||r.end_date)?' • ':'')+esc(r.start_date||'')+(r.start_date||r.end_date?' — ':'')+esc(r.end_date||'')+'</div>':'')+'<ul>'+String(r.description||'').split(/\n+/).filter(Boolean).map(x=>'<li>'+esc(x.trim())+'</li>').join('')+'</ul></article>').join('')};
+  render(PROJECTS_FALLBACK);
+  try{
+    const {data,error}=await sb.from('projects').select('*').neq('project_name',CMS).order('sort_order',{ascending:true});
+    if(error){console.error('Projects database load error:',error);return}
+    if(Array.isArray(data)&&data.length)render(data);
+  }catch(error){console.error('Projects load error:',error)}
+}
 async function media(){const img=document.getElementById('profilePhoto');if(img){const {data}=sb.storage.from('profile-photo').getPublicUrl('profile/profile-photo.webp');img.onload=()=>{img.style.display='block';document.getElementById('avatarFallback')?.style.setProperty('display','none')};img.onerror=()=>{img.style.display='none'};img.src=data.publicUrl+'?t='+Date.now();const {data:s}=await sb.from('profile_settings').select('photo_zoom,photo_x,photo_y').eq('id',1).maybeSingle();if(s)img.style.transform='translate('+((Number(s.photo_x||50)-50)*1.5)+'px,'+((Number(s.photo_y||50)-50)*1.5)+'px) scale('+(Number(s.photo_zoom)||1)+')'}const logo=document.querySelector('.brand img');if(logo&&S.logoPath){const {data}=sb.storage.from('profile-photo').getPublicUrl(S.logoPath);if(data?.publicUrl)logo.src=data.publicUrl+'?t='+Date.now()}}
 async function main() {
   // Load the public database sections independently so one CMS/SEO issue
