@@ -109,7 +109,7 @@ async function renderProjects(){
 
     if(error){
       console.error('Projects database load error:',error);
-      grid.innerHTML='<p class="section-sub">Projects could not be loaded.</p>';
+      grid.innerHTML='<p class="section-sub">Projects could not be loaded.</p>'; console.error('Projects query error:', error);
       return;
     }
 
@@ -119,35 +119,25 @@ async function renderProjects(){
       return;
     }
 
-    const groups={};
-    rows.forEach(r=>{
-      const company=projectCompany(r);
-      const key=company || 'Featured Projects';
-      (groups[key] ||= []).push(r);
-    });
-
-    grid.innerHTML=Object.entries(groups).map(([company,items])=>{
-      const count=items.length;
-      return '<div class="projectGroup">'+
-        '<h3 class="projectGroupTitle">Projects at '+esc(company)+
-        ' <span class="projectCount">'+count+' '+(count===1?'project':'projects')+'</span></h3>'+
-        '<div class="grid">'+
-        items.map((r,i)=>
-          '<article class="card project">'+
-          '<div class="num">'+String(i+1).padStart(2,'0')+' / PROJECT</div>'+
-          '<h3>'+esc(r.project_name||'')+'</h3>'+
-          (r.role?'<div class="company">'+esc(r.role)+'</div>':'')+
-          (r.location||r.start_date||r.end_date?
-            '<div class="date">'+esc(r.location||'')+
-            (r.location&&(r.start_date||r.end_date)?' • ':'')+
-            esc(r.start_date||'')+
-            (r.start_date||r.end_date?' — ':'')+
-            esc(r.end_date||'')+'</div>':'')+
-          (projectDescription(r)?'<p>'+esc(projectDescription(r))+'</p>':'')+
-          '</article>'
-        ).join('')+
-        '</div></div>';
-    }).join('');
+    const count=rows.length;
+    grid.innerHTML='<div class="projectGroup">'+
+      '<h3 class="projectGroupTitle">Projects <span class="projectCount">'+count+' '+(count===1?'project':'projects')+'</span></h3>'+
+      '<div class="grid">'+
+      rows.map((r,i)=>
+        '<article class="card project">'+
+        '<div class="num">'+String(i+1).padStart(2,'0')+' / PROJECT</div>'+
+        '<h3>'+esc(r.project_name||'')+'</h3>'+
+        (r.role?'<div class="company">'+esc(r.role)+'</div>':'')+
+        (r.location||r.start_date||r.end_date?
+          '<div class="date">'+esc(r.location||'')+
+          (r.location&&(r.start_date||r.end_date)?' • ':'')+
+          esc(r.start_date||'')+
+          (r.start_date||r.end_date?' — ':'')+
+          esc(r.end_date||'')+'</div>':'')+
+        (projectDescription(r)?'<p>'+esc(projectDescription(r))+'</p>':'')+
+        '</article>'
+      ).join('')+
+      '</div></div>';
   }catch(error){
     console.error('Projects load error:',error);
     grid.innerHTML='<p class="section-sub">Projects could not be loaded.</p>';
