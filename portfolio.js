@@ -85,7 +85,7 @@ async function renderExperience() {
   try {
     const { data, error } = await sb
       .from('experience')
-      .select('id,company,position,location,start_date,end_date,description,sort_order')
+      .select('id,company,position,start_date,end_date,description,sort_order')
       .order('sort_order', { ascending: true })
       .order('id', { ascending: true });
 
