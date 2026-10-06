@@ -91,29 +91,53 @@ async function renderExperience() {
 }
 
 const PROJECTS_FALLBACK=[
-  {project_name:'IT Infrastructure Setup',role:'GREENFIELD',location:'Pharmaceutical Facility',start_date:'2026',end_date:'Present',description:'End-to-end Greenfield infrastructure setup for a new pharmaceutical facility, including requirements, architecture, BOQ, vendor coordination and server/firewall/network deployment.',sort_order:1},
-  {project_name:'Enterprise Network Management',role:'Network Engineer',location:'Enterprise Environments',start_date:'2024',end_date:'Present',description:'Network design, router and switch configuration, VLAN/IP configuration, routing, connectivity troubleshooting and firewall management across enterprise environments.',sort_order:2},
-  {project_name:'Network Monitoring',role:'Network Engineer',location:'Enterprise Infrastructure',start_date:'2024',end_date:'Present',description:'Implementation and operational use of Cacti, OP Manager, Wireshark and Zabbix for monitoring and troubleshooting network infrastructure.',sort_order:3},
-  {project_name:'Windows Server & Virtualization',role:'IT Infrastructure Engineer',location:'Server Infrastructure',start_date:'2024',end_date:'Present',description:'Windows Server 2022 administration including AD DS, DNS, DHCP and WDS, along with Hyper-V/VMware virtualization support.',sort_order:4}
+  {project_name:'IT Infrastructure Setup',company:'Aspire Techno Global Pvt. Ltd.',role:'GREENFIELD',location:'Pharmaceutical Facility',start_date:'2026',end_date:'Present',description:'End-to-end Greenfield infrastructure setup for a new pharmaceutical facility, including requirements, architecture, BOQ, vendor coordination and server/firewall/network deployment.',sort_order:1},
+  {project_name:'Enterprise Network Management',company:'Aspire Techno Global Pvt. Ltd.',role:'Network Engineer',location:'Enterprise Environments',start_date:'2024',end_date:'Present',description:'Network design, router and switch configuration, VLAN/IP configuration, routing, connectivity troubleshooting and firewall management across enterprise environments.',sort_order:2},
+  {project_name:'Network Monitoring',company:'Aspire Techno Global Pvt. Ltd.',role:'Network Engineer',location:'Enterprise Infrastructure',start_date:'2024',end_date:'Present',description:'Implementation and operational use of Cacti, OP Manager, Wireshark and Zabbix for monitoring and troubleshooting network infrastructure.',sort_order:3},
+  {project_name:'Windows Server & Virtualization',company:'Aspire Techno Global Pvt. Ltd.',role:'IT Infrastructure Engineer',location:'Server Infrastructure',start_date:'2024',end_date:'Present',description:'Windows Server 2022 administration including AD DS, DNS, DHCP and WDS, along with Hyper-V/VMware virtualization support.',sort_order:4}
 ];
+
+function projectCompany(row){
+  const m=String(row?.description||'').match(/^\\[Company:\\s*([^\\]]+)\\]\\s*/i);
+  return (m&&m[1].trim()) || row?.company || '';
+}
+function projectDescription(row){
+  return String(row?.description||'').replace(/^\\[Company:\\s*[^\\]]+\\]\\s*/i,'').trim();
+}
 
 async function renderProjects(){
   const section=document.getElementById('projects');
   const grid=document.getElementById('projectsList') || section?.querySelector('.grid');
   if(!grid)return;
+
   const render=rows=>{
     const safe=Array.isArray(rows)?rows:[];
-    grid.innerHTML=safe.map((r,i)=>'<article class="card project"><div class="num">'+String(i+1).padStart(2,'0')+' / PROJECT</div><h3>'+esc(r.project_name||'')+'</h3>'+(r.role?'<div class="company">'+esc(r.role)+'</div>':'')+(r.location||r.start_date||r.end_date?'<div class="date">'+esc(r.location||'')+(r.location&&(r.start_date||r.end_date)?' • ':'')+esc(r.start_date||'')+(r.start_date||r.end_date?' — ':'')+esc(r.end_date||'')+'</div>':'')+'<ul>'+String(r.description||'').split(/\n+/).filter(Boolean).map(x=>'<li>'+esc(x.trim())+'</li>').join('')+'</ul></article>').join('');
+    const groups={};
+    safe.forEach(r=>{
+      const company=projectCompany(r)||'Featured Work';
+      (groups[company] ||= []).push(r);
+    });
+    let html='';
+    Object.entries(groups).forEach(([company,items])=>{
+      html += '<div class="projectGroup"><h3 class="projectGroupTitle">Projects at '+esc(company)+'</h3><div class="grid">'+
+        items.sort((a,b)=>(a.sort_order||1)-(b.sort_order||1)).map((r,i)=>
+          '<article class="card project"><div class="num">'+String(i+1).padStart(2,'0')+' / PROJECT</div><h3>'+esc(r.project_name||'')+'</h3>'+
+          (r.role?'<div class="company">'+esc(r.role)+'</div>':'')+
+          (r.location||r.start_date||r.end_date?'<div class="date">'+esc(r.location||'')+(r.location&&(r.start_date||r.end_date)?' • ':'')+esc(r.start_date||'')+(r.start_date||r.end_date?' — ':'')+esc(r.end_date||'')+'</div>':'')+
+          '<p>'+esc(projectDescription(r))+'</p></article>'
+        ).join('')+'</div></div>';
+    });
+    grid.innerHTML=html;
   };
-  // Never blank the public section because of a database/RLS failure.
+
   render(PROJECTS_FALLBACK);
   try{
-    const {data,error}=await sb.from('projects').select('project_name,role,location,start_date,end_date,description,sort_order').neq('project_name',CMS).order('sort_order',{ascending:true});
+    const {data,error}=await sb.from('projects').select('id,project_name,role,location,start_date,end_date,description,sort_order').neq('project_name',CMS).order('sort_order',{ascending:true});
     if(error){console.error('Projects database load error:',error);return}
     if(Array.isArray(data)&&data.length)render(data);
   }catch(error){console.error('Projects load error:',error)}
 }
-async function media(){const img=document.getElementById('profilePhoto');if(img){const {data}=sb.storage.from('profile-photo').getPublicUrl('profile/profile-photo.webp');img.onload=()=>{img.style.display='block';document.getElementById('avatarFallback')?.style.setProperty('display','none')};img.onerror=()=>{img.style.display='none'};img.src=data.publicUrl+'?t='+Date.now();const {data:s}=await sb.from('profile_settings').select('photo_zoom,photo_x,photo_y').eq('id',1).maybeSingle();if(s)img.style.transform='translate('+((Number(s.photo_x||50)-50)*1.5)+'px,'+((Number(s.photo_y||50)-50)*1.5)+'px) scale('+(Number(s.photo_zoom)||1)+')'}const logo=document.querySelector('.brand img');if(logo&&S.logoPath){const {data}=sb.storage.from('profile-photo').getPublicUrl(S.logoPath);if(data?.publicUrl)logo.src=data.publicUrl+'?t='+Date.now()}}
+
 async function main() {
   // Load the public database sections independently so one CMS/SEO issue
   // cannot prevent Experience or Projects from rendering.
