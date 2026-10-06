@@ -24,73 +24,46 @@ function apply(){
 function renderSkills(){const s=sectionByTitle('skills'),box=s?.querySelector('.card.skill');if(!box)return;box.innerHTML=[...S.skills].sort((a,b)=>(a.order||1)-(b.order||1)).map(x=>'<span class="tag">'+esc(x.name)+'</span>').join('')}
 function renderEducation(){const s=sections().find(x=>(x.textContent||'').includes('Education & Certification'));if(!s)return;let grid=s.querySelector('.grid');if(!grid){grid=document.createElement('div');grid.className='grid';s.appendChild(grid)}grid.innerHTML=[...S.education].sort((a,b)=>(a.order||1)-(b.order||1)).map(x=>'<div class="card"><h3>'+esc(x.title)+'</h3><p>'+esc(x.institute||'')+(x.year?'<br>'+esc(x.year):'')+(x.result?' · '+esc(x.result):'')+(x.details?'<br>'+esc(x.details):'')+'</p></div>').join('')}
 async function renderExperience() {
-  const s = sectionByTitle('experience');
+  const s = document.getElementById('experience');
+  if (!s) return;
 
-  if (!s) {
-    console.error('Experience section not found');
-    return;
-  }
-
-  const list = s.querySelector('.timeline');
-
-  if (!list) {
-    console.error('Timeline element (.timeline) not found inside Experience section');
-    return;
-  }
+  const list = document.getElementById('experienceList') || s.querySelector('.timeline');
+  if (!list) return;
 
   const { data, error } = await sb
     .from('experience')
-    .select('*')
-    .order('sort_order', { ascending: true });
+    .select('id,company,position,location,start_date,end_date,description,sort_order')
+    .order('sort_order', { ascending: true })
+    .order('id', { ascending: true });
 
   if (error) {
     console.error('Supabase experience error:', error);
-
-    list.innerHTML = `
-      <div class="card">
-        <h3>Unable to load experience</h3>
-        <p>${esc(error.message)}</p>
-      </div>
-    `;
-
+    list.innerHTML = '<div class="job"><div class="jobbox"><h3>Experience could not be loaded.</h3><div class="company">Supabase access error: ' + esc(error.message) + '</div></div></div>';
     return;
   }
-
-  console.log('Experience data:', data);
 
   if (!data || data.length === 0) {
-    list.innerHTML = `
-      <div class="card">
-        <h3>No experience found</h3>
-        <p>Please add experience records in Supabase.</p>
-      </div>
-    `;
+    list.innerHTML = '<div class="job"><div class="jobbox"><h3>No experience added yet.</h3><div class="company">Add an experience entry from the Admin Panel.</div></div></div>';
     return;
   }
 
-  list.innerHTML = data.map(r => `
-    <article class="job">
-      <div class="date">
-        ${esc(r.start_date || '')} — ${esc(r.end_date || 'Present')}
-      </div>
+  list.innerHTML = data.map(r => {
+    const bullets = String(r.description || '')
+      .split(/\\r?\\n+/)
+      .map(x => x.trim())
+      .filter(Boolean)
+      .map(x => '<li>' + esc(x) + '</li>')
+      .join('');
 
-      <div class="jobbox">
-        <h3>${esc(r.position || '')}</h3>
-
-        <div class="company">
-          ${esc(r.company || '')}
-        </div>
-
-        <ul>
-          ${String(r.description || '')
-            .split(/\n+/)
-            .filter(Boolean)
-            .map(x => `<li>${esc(x.trim())}</li>`)
-            .join('')}
-        </ul>
-      </div>
-    </article>
-  `).join('');
+    return '<article class="job">' +
+      '<div class="date">' + esc(r.start_date || '') + ' — ' + esc(r.end_date || 'Present') + '</div>' +
+      '<div class="jobbox">' +
+        '<h3>' + esc(r.position || '') + '</h3>' +
+        '<div class="company">' + esc(r.company || '') + (r.location ? ' · ' + esc(r.location) : '') + '</div>' +
+        (bullets ? '<ul>' + bullets + '</ul>' : '') +
+      '</div>' +
+    '</article>';
+  }).join('');
 }
 async function renderProjects(){const s=sectionByTitle('featured'),grid=s?.querySelector('.grid');if(!grid)return;const {data,error}=await sb.from('projects').select('*').neq('project_name',CMS).order('sort_order',{ascending:true});if(error)return;grid.innerHTML=(data||[]).map((r,i)=>'<article class="card project"><div class="num">'+String(i+1).padStart(2,'0')+' / PROJECT</div><h3>'+esc(r.project_name)+'</h3>'+(r.role?'<div class="company">'+esc(r.role)+'</div>':'')+(r.location||r.start_date||r.end_date?'<div class="date">'+esc(r.location||'')+(r.location&&(r.start_date||r.end_date)?' • ':'')+esc(r.start_date||'')+(r.start_date||r.end_date?' — ':'')+esc(r.end_date||'')+'</div>':'')+'<ul>'+String(r.description||'').split(/\n+/).filter(Boolean).map(x=>'<li>'+esc(x.trim())+'</li>').join('')+'</ul></article>').join('')}
 async function media(){const img=document.getElementById('profilePhoto');if(img){const {data}=sb.storage.from('profile-photo').getPublicUrl('profile/profile-photo.webp');img.onload=()=>{img.style.display='block';document.getElementById('avatarFallback')?.style.setProperty('display','none')};img.onerror=()=>{img.style.display='none'};img.src=data.publicUrl+'?t='+Date.now();const {data:s}=await sb.from('profile_settings').select('photo_zoom,photo_x,photo_y').eq('id',1).maybeSingle();if(s)img.style.transform='translate('+((Number(s.photo_x||50)-50)*1.5)+'px,'+((Number(s.photo_y||50)-50)*1.5)+'px) scale('+(Number(s.photo_zoom)||1)+')'}const logo=document.querySelector('.brand img');if(logo&&S.logoPath){const {data}=sb.storage.from('profile-photo').getPublicUrl(S.logoPath);if(data?.publicUrl)logo.src=data.publicUrl+'?t='+Date.now()}}
