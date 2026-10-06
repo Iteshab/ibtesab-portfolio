@@ -119,7 +119,9 @@ async function renderProjects(){
     });
     let html='';
     Object.entries(groups).forEach(([company,items])=>{
-      html += '<div class="projectGroup"><h3 class="projectGroupTitle">Projects at '+esc(company)+'</h3><div class="grid">'+
+      const count=items.length;
+      const label=count===1?'project':'projects';
+      html += '<div class="projectGroup"><h3 class="projectGroupTitle">Projects at '+esc(company)+' <span class="projectCount">'+count+' '+label+'</span></h3><div class="grid">'+
         items.sort((a,b)=>(a.sort_order||1)-(b.sort_order||1)).map((r,i)=>
           '<article class="card project"><div class="num">'+String(i+1).padStart(2,'0')+' / PROJECT</div><h3>'+esc(r.project_name||'')+'</h3>'+
           (r.role?'<div class="company">'+esc(r.role)+'</div>':'')+
