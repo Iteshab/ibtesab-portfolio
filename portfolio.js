@@ -23,25 +23,42 @@ function apply(){
 }
 function renderSkills(){const s=sectionByTitle('skills'),box=s?.querySelector('.card.skill');if(!box)return;box.innerHTML=[...S.skills].sort((a,b)=>(a.order||1)-(b.order||1)).map(x=>'<span class="tag">'+esc(x.name)+'</span>').join('')}
 function renderEducation(){const s=sections().find(x=>(x.textContent||'').includes('Education & Certification'));if(!s)return;let grid=s.querySelector('.grid');if(!grid){grid=document.createElement('div');grid.className='grid';s.appendChild(grid)}grid.innerHTML=[...S.education].sort((a,b)=>(a.order||1)-(b.order||1)).map(x=>'<div class="card"><h3>'+esc(x.title)+'</h3><p>'+esc(x.institute||'')+(x.year?'<br>'+esc(x.year):'')+(x.result?' · '+esc(x.result):'')+(x.details?'<br>'+esc(x.details):'')+'</p></div>').join('')}
+const EXPERIENCE_FALLBACK = [
+  {
+    position: 'L2 Support Engineer IT',
+    company: 'Bioaltus Pharmaceuticals Pvt Ltd',
+    location: 'Angam (Vapi), INDIA',
+    start_date: 'May 2026',
+    end_date: 'Present',
+    description: 'Currently leading end-to-end Greenfield IT infrastructure setup for a new pharmaceutical facility, managing requirement gathering and solution architecture design.\\nMicrosoft 365 Administrator.\\nBOQ finalization, vendor coordination, procurement, Server, Firewall and Network deployment.',
+    sort_order: 1
+  },
+  {
+    position: 'L2 Support Engineer IT',
+    company: 'SEFORGE LIMITED (Suzlon Group)',
+    location: 'VADODARA, INDIA',
+    start_date: 'Jan 2026',
+    end_date: 'May 2026',
+    description: 'Led and executed infrastructure projects involving Windows Server environments (2019-2025), Hyper-V virtualization, and enterprise network configurations.\\nManaged and optimized firewall solutions SonicWall to ensure network security and compliance.\\nDelivered end-user support for Windows OS environments (7, 10, 11) and managed Office 365 administration tasks.\\nMicrosoft 365 Administrator.\\nCoordinated vendor management and resolved technical issues promptly.\\nDelivered high system uptime (99%) and reduced IT costs by bringing outsourced contracts in-house through operational improvement.',
+    sort_order: 2
+  },
+  {
+    position: 'Senior Network Engineer',
+    company: 'LD College of Engineering',
+    location: 'AHEMDABAD, INDIA',
+    start_date: 'June 2024',
+    end_date: 'Dec 2025',
+    description: 'Designed networks, troubleshoot connectivity, and configured routers/switches to support campus infrastructure reliability.\\nNetworking – Cisco / Zyxel / Fortinet / D-Link / Extreme and Aruba Switches configuration, VLAN/IP configuration, Static/Dynamic Routing/Telnet/DHCP.\\nSecurity & Firewalls – Sophos/Fortinet/PF-Sense management, RIP/RIPv2/IPv6, Network troubleshooting.\\nMonitoring & Tools - Cacti/OP Manager, Wireshark, Zabbix.\\nServers & Virtualization - Windows Server 2022 (ADDS/DHCP/WDS), Hyper-V/VMware, MS Office 365, Hardware troubleshooting, OS installation (Windows/Linux).',
+    sort_order: 3
+  }
+];
+
 async function renderExperience() {
   const list = document.getElementById('experienceList');
   if (!list) return;
 
-  try {
-    const { data, error } = await sb
-      .from('experience')
-      .select('*')
-      .order('sort_order', { ascending: true })
-      .order('id', { ascending: true });
-
-    if (error) throw error;
-
-    if (!data || data.length === 0) {
-      list.innerHTML = '<div class="job"><div class="jobbox"><h3>No experience added yet.</h3><div class="company">Add an experience entry from the Admin Panel.</div></div></div>';
-      return;
-    }
-
-    list.innerHTML = data.map(r => {
+  const render = rows => {
+    list.innerHTML = rows.map(r => {
       const bullets = String(r.description || '')
         .split(/\r?\n+/)
         .map(x => x.trim())
@@ -58,9 +75,25 @@ async function renderExperience() {
         '</div>' +
       '</article>';
     }).join('');
+  };
+
+  try {
+    const { data, error } = await sb
+      .from('experience')
+      .select('id,company,position,location,start_date,end_date,description,sort_order')
+      .order('sort_order', { ascending: true })
+      .order('id', { ascending: true });
+
+    if (error) {
+      console.error('Experience database load error:', error);
+      render(EXPERIENCE_FALLBACK);
+      return;
+    }
+
+    render(data && data.length ? data : EXPERIENCE_FALLBACK);
   } catch (error) {
     console.error('Experience load error:', error);
-    list.innerHTML = '<div class="job"><div class="jobbox"><h3>Experience could not be loaded.</h3><div class="company">' + esc(error?.message || 'Unknown error') + '</div></div></div>';
+    render(EXPERIENCE_FALLBACK);
   }
 }
 async function renderProjects(){const s=sectionByTitle('featured'),grid=s?.querySelector('.grid');if(!grid)return;const {data,error}=await sb.from('projects').select('*').neq('project_name',CMS).order('sort_order',{ascending:true});if(error)return;grid.innerHTML=(data||[]).map((r,i)=>'<article class="card project"><div class="num">'+String(i+1).padStart(2,'0')+' / PROJECT</div><h3>'+esc(r.project_name)+'</h3>'+(r.role?'<div class="company">'+esc(r.role)+'</div>':'')+(r.location||r.start_date||r.end_date?'<div class="date">'+esc(r.location||'')+(r.location&&(r.start_date||r.end_date)?' • ':'')+esc(r.start_date||'')+(r.start_date||r.end_date?' — ':'')+esc(r.end_date||'')+'</div>':'')+'<ul>'+String(r.description||'').split(/\n+/).filter(Boolean).map(x=>'<li>'+esc(x.trim())+'</li>').join('')+'</ul></article>').join('')}
