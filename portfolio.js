@@ -109,12 +109,17 @@ const PROJECTS_FALLBACK=[
 ];
 
 async function renderProjects(){
-  const s=document.getElementById('projects'),grid=s?.querySelector('#projectsList, .grid');
+  const section=document.getElementById('projects');
+  const grid=document.getElementById('projectsList') || section?.querySelector('.grid');
   if(!grid)return;
-  const render=rows=>{grid.innerHTML=(rows||[]).map((r,i)=>'<article class="card project"><div class="num">'+String(i+1).padStart(2,'0')+' / PROJECT</div><h3>'+esc(r.project_name||'')+'</h3>'+(r.role?'<div class="company">'+esc(r.role)+'</div>':'')+(r.location||r.start_date||r.end_date?'<div class="date">'+esc(r.location||'')+(r.location&&(r.start_date||r.end_date)?' • ':'')+esc(r.start_date||'')+(r.start_date||r.end_date?' — ':'')+esc(r.end_date||'')+'</div>':'')+'<ul>'+String(r.description||'').split(/\n+/).filter(Boolean).map(x=>'<li>'+esc(x.trim())+'</li>').join('')+'</ul></article>').join('')};
+  const render=rows=>{
+    const safe=Array.isArray(rows)?rows:[];
+    grid.innerHTML=safe.map((r,i)=>'<article class="card project"><div class="num">'+String(i+1).padStart(2,'0')+' / PROJECT</div><h3>'+esc(r.project_name||'')+'</h3>'+(r.role?'<div class="company">'+esc(r.role)+'</div>':'')+(r.location||r.start_date||r.end_date?'<div class="date">'+esc(r.location||'')+(r.location&&(r.start_date||r.end_date)?' • ':'')+esc(r.start_date||'')+(r.start_date||r.end_date?' — ':'')+esc(r.end_date||'')+'</div>':'')+'<ul>'+String(r.description||'').split(/\n+/).filter(Boolean).map(x=>'<li>'+esc(x.trim())+'</li>').join('')+'</ul></article>').join('');
+  };
+  // Never blank the public section because of a database/RLS failure.
   render(PROJECTS_FALLBACK);
   try{
-    const {data,error}=await sb.from('projects').select('*').neq('project_name',CMS).order('sort_order',{ascending:true});
+    const {data,error}=await sb.from('projects').select('project_name,role,location,start_date,end_date,description,sort_order').neq('project_name',CMS).order('sort_order',{ascending:true});
     if(error){console.error('Projects database load error:',error);return}
     if(Array.isArray(data)&&data.length)render(data);
   }catch(error){console.error('Projects load error:',error)}
