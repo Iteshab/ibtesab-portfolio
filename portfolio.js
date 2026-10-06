@@ -85,45 +85,13 @@ async function renderExperience() {
   }
 }
 
-const PROJECTS_FALLBACK=[
-  {
-    project_name:'Greenfield IT Infrastructure Setup',
-    company:'Bioaltus Pharmaceuticals Pvt Ltd',
-    role:'IT Infrastructure Project',
-    location:'Angam (Vapi), India',
-    start_date:'2026',
-    end_date:'Present',
-    description:'End-to-end Greenfield IT infrastructure setup for a new pharmaceutical facility, including requirement gathering, solution architecture, BOQ finalization, vendor coordination, procurement, server, firewall and network deployment.',
-    sort_order:1
-  },
-  {
-    project_name:'Enterprise IT Infrastructure & Server Virtualization',
-    company:'SEFORGE LIMITED (Suzlon Group)',
-    role:'IT Infrastructure Project',
-    location:'Vadodara, India',
-    start_date:'2026',
-    end_date:'May 2026',
-    description:'Infrastructure project covering Windows Server environments, Hyper-V virtualization, enterprise network configuration, SonicWall firewall security, Microsoft 365 administration and vendor coordination.',
-    sort_order:2
-  },
-  {
-    project_name:'Campus Network Infrastructure',
-    company:'LD College of Engineering',
-    role:'Network Infrastructure Project',
-    location:'Ahmedabad, India',
-    start_date:'2024',
-    end_date:'Dec 2025',
-    description:'Campus network infrastructure work including network design, Cisco, Zyxel, Fortinet, D-Link, Extreme and Aruba switch configuration, VLAN/IP configuration, routing, DHCP, firewall management and network monitoring using Cacti, OP Manager, Wireshark and Zabbix.',
-    sort_order:3
-  }
-];
-
 function projectCompany(row){
-  const m=String(row?.description||'').match(/^\\[Company:\s*([^\\]]+)\\]\s*/i);
-  return (m&&m[1].trim()) || row?.company || '';
+  const m=String(row?.description||'').match(/^\[Company:\s*([^\]]+)\]\s*/i);
+  return (m && m[1].trim()) || '';
 }
+
 function projectDescription(row){
-  return String(row?.description||'').replace(/^\\[Company:\s*[^\\]]+\\]\s*/i,'').trim();
+  return String(row?.description||'').replace(/^\[Company:\s*[^\]]+\]\s*/i,'').trim();
 }
 
 async function renderProjects(){
@@ -131,34 +99,59 @@ async function renderProjects(){
   const grid=document.getElementById('projectsList') || section?.querySelector('.grid');
   if(!grid)return;
 
-  const render=rows=>{
-    const safe=Array.isArray(rows)?rows:[];
-    const groups={};
-    safe.forEach(r=>{
-      const company=projectCompany(r)||'Featured Work';
-      (groups[company] ||= []).push(r);
-    });
-    let html='';
-    Object.entries(groups).forEach(([company,items])=>{
-      const count=items.length;
-      const label=count===1?'project':'projects';
-      html += '<div class="projectGroup"><h3 class="projectGroupTitle">Projects at '+esc(company)+' <span class="projectCount">'+count+' '+label+'</span></h3><div class="grid">'+
-        items.sort((a,b)=>(a.sort_order||1)-(b.sort_order||1)).map((r,i)=>
-          '<article class="card project"><div class="num">'+String(i+1).padStart(2,'0')+' / PROJECT</div><h3>'+esc(r.project_name||'')+'</h3>'+
-          (r.role?'<div class="company">'+esc(r.role)+'</div>':'')+
-          (r.location||r.start_date||r.end_date?'<div class="date">'+esc(r.location||'')+(r.location&&(r.start_date||r.end_date)?' • ':'')+esc(r.start_date||'')+(r.start_date||r.end_date?' — ':'')+esc(r.end_date||'')+'</div>':'')+
-          '<p>'+esc(projectDescription(r))+'</p></article>'
-        ).join('')+'</div></div>';
-    });
-    grid.innerHTML=html;
-  };
-
-  render(PROJECTS_FALLBACK);
   try{
-    const {data,error}=await sb.from('projects').select('id,project_name,role,location,start_date,end_date,description,sort_order').neq('project_name',CMS).order('sort_order',{ascending:true});
-    if(error){console.error('Projects database load error:',error);return}
-    if(Array.isArray(data)&&data.length)render(data);
-  }catch(error){console.error('Projects load error:',error)}
+    const {data,error}=await sb
+      .from('projects')
+      .select('id,project_name,role,location,start_date,end_date,description,sort_order')
+      .neq('project_name',CMS)
+      .order('sort_order',{ascending:true})
+      .order('id',{ascending:true});
+
+    if(error){
+      console.error('Projects database load error:',error);
+      grid.innerHTML='<p class="section-sub">Projects could not be loaded.</p>';
+      return;
+    }
+
+    const rows=Array.isArray(data)?data:[];
+    if(!rows.length){
+      grid.innerHTML='<p class="section-sub">No projects added yet.</p>';
+      return;
+    }
+
+    const groups={};
+    rows.forEach(r=>{
+      const company=projectCompany(r);
+      const key=company || 'Featured Projects';
+      (groups[key] ||= []).push(r);
+    });
+
+    grid.innerHTML=Object.entries(groups).map(([company,items])=>{
+      const count=items.length;
+      return '<div class="projectGroup">'+
+        '<h3 class="projectGroupTitle">Projects at '+esc(company)+
+        ' <span class="projectCount">'+count+' '+(count===1?'project':'projects')+'</span></h3>'+
+        '<div class="grid">'+
+        items.map((r,i)=>
+          '<article class="card project">'+
+          '<div class="num">'+String(i+1).padStart(2,'0')+' / PROJECT</div>'+
+          '<h3>'+esc(r.project_name||'')+'</h3>'+
+          (r.role?'<div class="company">'+esc(r.role)+'</div>':'')+
+          (r.location||r.start_date||r.end_date?
+            '<div class="date">'+esc(r.location||'')+
+            (r.location&&(r.start_date||r.end_date)?' • ':'')+
+            esc(r.start_date||'')+
+            (r.start_date||r.end_date?' — ':'')+
+            esc(r.end_date||'')+'</div>':'')+
+          (projectDescription(r)?'<p>'+esc(projectDescription(r))+'</p>':'')+
+          '</article>'
+        ).join('')+
+        '</div></div>';
+    }).join('');
+  }catch(error){
+    console.error('Projects load error:',error);
+    grid.innerHTML='<p class="section-sub">Projects could not be loaded.</p>';
+  }
 }
 
 async function main() {
