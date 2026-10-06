@@ -109,7 +109,7 @@ const PROJECTS_FALLBACK=[
 ];
 
 async function renderProjects(){
-  const s=sectionByTitle('featured'),grid=s?.querySelector('.grid');
+  const s=document.getElementById('projects'),grid=s?.querySelector('#projectsList, .grid');
   if(!grid)return;
   const render=rows=>{grid.innerHTML=(rows||[]).map((r,i)=>'<article class="card project"><div class="num">'+String(i+1).padStart(2,'0')+' / PROJECT</div><h3>'+esc(r.project_name||'')+'</h3>'+(r.role?'<div class="company">'+esc(r.role)+'</div>':'')+(r.location||r.start_date||r.end_date?'<div class="date">'+esc(r.location||'')+(r.location&&(r.start_date||r.end_date)?' • ':'')+esc(r.start_date||'')+(r.start_date||r.end_date?' — ':'')+esc(r.end_date||'')+'</div>':'')+'<ul>'+String(r.description||'').split(/\n+/).filter(Boolean).map(x=>'<li>'+esc(x.trim())+'</li>').join('')+'</ul></article>').join('')};
   render(PROJECTS_FALLBACK);
