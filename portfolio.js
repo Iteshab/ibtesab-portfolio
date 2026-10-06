@@ -25,31 +25,20 @@ function renderSkills(){const s=sectionByTitle('skills'),box=s?.querySelector('.
 function renderEducation(){const s=sections().find(x=>(x.textContent||'').includes('Education & Certification'));if(!s)return;let grid=s.querySelector('.grid');if(!grid){grid=document.createElement('div');grid.className='grid';s.appendChild(grid)}grid.innerHTML=[...S.education].sort((a,b)=>(a.order||1)-(b.order||1)).map(x=>'<div class="card"><h3>'+esc(x.title)+'</h3><p>'+esc(x.institute||'')+(x.year?'<br>'+esc(x.year):'')+(x.result?' · '+esc(x.result):'')+(x.details?'<br>'+esc(x.details):'')+'</p></div>').join('')}
 const EXPERIENCE_FALLBACK = [
   {
-    position: 'L2 Support Engineer IT',
-    company: 'Bioaltus Pharmaceuticals Pvt Ltd',
-    location: 'Angam (Vapi), INDIA',
-    start_date: 'May 2026',
+    position: 'Network Engineer',
+    company: 'Ofis Square',
+    start_date: 'September 2026',
     end_date: 'Present',
-    description: 'Currently leading end-to-end Greenfield IT infrastructure setup for a new pharmaceutical facility, managing requirement gathering and solution architecture design.\\nMicrosoft 365 Administrator.\\nBOQ finalization, vendor coordination, procurement, Server, Firewall and Network deployment.',
+    description: 'Manage and maintain network infrastructure, including switches, routers, VLANs, IP addressing and network connectivity.\nMonitor and troubleshoot LAN/WAN connectivity, DHCP, DNS and network-related issues to ensure reliable IT operations.\nConfigure and troubleshoot firewall and network security solutions to maintain secure and stable network access.\nPerform network device configuration, monitoring and troubleshooting for day-to-day IT operations.\nManage Zoho Mail Admin Console, including user account administration, email aliases, mailbox settings, mail forwarding and email access policies.\nProvide IT support and troubleshooting for users, systems, network connectivity and hardware/software-related issues.\nMaintain IT infrastructure documentation, configuration details and support records.\nAssist in maintaining network availability, security and performance across the organization.',
     sort_order: 1
   },
   {
-    position: 'L2 Support Engineer IT',
-    company: 'SEFORGE LIMITED (Suzlon Group)',
-    location: 'VADODARA, INDIA',
-    start_date: 'Jan 2026',
-    end_date: 'May 2026',
-    description: 'Led and executed infrastructure projects involving Windows Server environments (2019-2025), Hyper-V virtualization, and enterprise network configurations.\\nManaged and optimized firewall solutions SonicWall to ensure network security and compliance.\\nDelivered end-user support for Windows OS environments (7, 10, 11) and managed Office 365 administration tasks.\\nMicrosoft 365 Administrator.\\nCoordinated vendor management and resolved technical issues promptly.\\nDelivered high system uptime (99%) and reduced IT costs by bringing outsourced contracts in-house through operational improvement.',
-    sort_order: 2
-  },
-  {
-    position: 'Senior Network Engineer',
-    company: 'LD College of Engineering',
-    location: 'AHEMDABAD, INDIA',
+    position: 'Network Engineer',
+    company: 'Aspire Techno Global Pvt. Ltd.',
     start_date: 'June 2024',
-    end_date: 'Dec 2025',
-    description: 'Designed networks, troubleshoot connectivity, and configured routers/switches to support campus infrastructure reliability.\\nNetworking – Cisco / Zyxel / Fortinet / D-Link / Extreme and Aruba Switches configuration, VLAN/IP configuration, Static/Dynamic Routing/Telnet/DHCP.\\nSecurity & Firewalls – Sophos/Fortinet/PF-Sense management, RIP/RIPv2/IPv6, Network troubleshooting.\\nMonitoring & Tools - Cacti/OP Manager, Wireshark, Zabbix.\\nServers & Virtualization - Windows Server 2022 (ADDS/DHCP/WDS), Hyper-V/VMware, MS Office 365, Hardware troubleshooting, OS installation (Windows/Linux).',
-    sort_order: 3
+    end_date: 'August 2026',
+    description: 'Designed, configured and maintained enterprise network infrastructure including routers, switches, VLANs, IP addressing and routing.\nConfigured and managed network security solutions including Sophos, Fortinet and pfSense firewalls.\nTroubleshot network connectivity, hardware and infrastructure issues to maintain reliable IT operations.\nManaged Windows Server environments including Active Directory, DNS, DHCP and WDS.\nWorked with Hyper-V/VMware virtualization and supported Windows/Linux operating systems.\nImplemented and monitored network infrastructure using Cacti, OP Manager, Wireshark and Zabbix.\nConfigured and managed Cisco, Zyxel, Fortinet, D-Link, Extreme and Aruba network devices.\nProvided technical support, vendor coordination and infrastructure deployment for IT projects.',
+    sort_order: 2
   }
 ];
 
