@@ -46,13 +46,7 @@ async function renderExperience() {
   const list = document.getElementById('experienceList');
   if (!list) return;
 
-  const render = (rows, projects=[]) => {
-    const projectGroups = {};
-    projects.forEach(r => {
-      const company = projectCompany(r);
-      if (company) (projectGroups[company] ||= []).push(r);
-    });
-
+  const render = rows => {
     list.innerHTML = rows.map(r => {
       const bullets = String(r.description || '')
         .replace(/\\n/g, '\\n')
@@ -62,66 +56,74 @@ async function renderExperience() {
         .map(x => '<li>' + esc(x) + '</li>')
         .join('');
 
-      const companyProjects = projectGroups[String(r.company || '').trim()] || [];
-      const projectsHtml = companyProjects.length
-        ? '<div class="experienceProjects"><div class="experienceProjectsTitle">Projects at ' +
-          esc(r.company || '') + ' <span class="projectCount">' +
-          companyProjects.length + ' ' + (companyProjects.length === 1 ? 'project' : 'projects') +
-          '</span></div><div class="experienceProjectList">' +
-          companyProjects.map(p =>
-            '<div class="experienceProject"><strong>' + esc(p.project_name || '') +
-            '</strong>' + (projectDescription(p) ? '<span>' + esc(projectDescription(p)) + '</span>' : '') +
-            '</div>'
-          ).join('') +
-          '</div></div>'
-        : '';
-
       return '<article class="job">' +
         '<div class="date">' + esc(r.start_date || '') + ' — ' + esc(r.end_date || 'Present') + '</div>' +
         '<div class="jobbox">' +
           '<h3>' + esc(r.position || '') + '</h3>' +
-          '<div class="company">' + esc(r.company || '') + (r.location ? ' · ' + esc(r.location) : '') + '</div>' +
+          '<div class="company">' + esc(r.company || '') + '</div>' +
           (bullets ? '<ul>' + bullets + '</ul>' : '') +
-          projectsHtml +
         '</div>' +
       '</article>';
     }).join('');
   };
 
-  render(EXPERIENCE_FALLBACK, PROJECTS_FALLBACK);
+  render(EXPERIENCE_FALLBACK);
 
   try {
-    const [{data: experienceData, error: experienceError}, {data: projectData, error: projectError}] =
-      await Promise.all([
-        sb.from('experience').select('id,company,position,start_date,end_date,description,sort_order').order('sort_order', {ascending:true}).order('id', {ascending:true}),
-        sb.from('projects').select('id,project_name,role,location,start_date,end_date,description,sort_order').neq('project_name',CMS).order('sort_order', {ascending:true})
-      ]);
+    const {data,error}=await sb.from('experience')
+      .select('id,company,position,start_date,end_date,description,sort_order')
+      .order('sort_order',{ascending:true})
+      .order('id',{ascending:true});
 
-    if (experienceError) {
-      console.error('Experience database load error:', experienceError);
+    if(error){
+      console.error('Experience database load error:',error);
       return;
     }
-
-    const projects = projectError ? PROJECTS_FALLBACK : (Array.isArray(projectData) && projectData.length ? projectData : PROJECTS_FALLBACK);
-    if (Array.isArray(experienceData) && experienceData.length) render(experienceData, projects);
-  } catch (error) {
-    console.error('Experience load error:', error);
+    if(Array.isArray(data)&&data.length) render(data);
+  }catch(error){
+    console.error('Experience load error:',error);
   }
 }
 
 const PROJECTS_FALLBACK=[
-  {project_name:'IT Infrastructure Setup',company:'Aspire Techno Global Pvt. Ltd.',role:'GREENFIELD',location:'Pharmaceutical Facility',start_date:'2026',end_date:'Present',description:'End-to-end Greenfield infrastructure setup for a new pharmaceutical facility, including requirements, architecture, BOQ, vendor coordination and server/firewall/network deployment.',sort_order:1},
-  {project_name:'Enterprise Network Management',company:'Aspire Techno Global Pvt. Ltd.',role:'Network Engineer',location:'Enterprise Environments',start_date:'2024',end_date:'Present',description:'Network design, router and switch configuration, VLAN/IP configuration, routing, connectivity troubleshooting and firewall management across enterprise environments.',sort_order:2},
-  {project_name:'Network Monitoring',company:'Aspire Techno Global Pvt. Ltd.',role:'Network Engineer',location:'Enterprise Infrastructure',start_date:'2024',end_date:'Present',description:'Implementation and operational use of Cacti, OP Manager, Wireshark and Zabbix for monitoring and troubleshooting network infrastructure.',sort_order:3},
-  {project_name:'Windows Server & Virtualization',company:'Aspire Techno Global Pvt. Ltd.',role:'IT Infrastructure Engineer',location:'Server Infrastructure',start_date:'2024',end_date:'Present',description:'Windows Server 2022 administration including AD DS, DNS, DHCP and WDS, along with Hyper-V/VMware virtualization support.',sort_order:4}
+  {
+    project_name:'Greenfield IT Infrastructure Setup',
+    company:'Bioaltus Pharmaceuticals Pvt Ltd',
+    role:'IT Infrastructure Project',
+    location:'Angam (Vapi), India',
+    start_date:'2026',
+    end_date:'Present',
+    description:'End-to-end Greenfield IT infrastructure setup for a new pharmaceutical facility, including requirement gathering, solution architecture, BOQ finalization, vendor coordination, procurement, server, firewall and network deployment.',
+    sort_order:1
+  },
+  {
+    project_name:'Enterprise IT Infrastructure & Server Virtualization',
+    company:'SEFORGE LIMITED (Suzlon Group)',
+    role:'IT Infrastructure Project',
+    location:'Vadodara, India',
+    start_date:'2026',
+    end_date:'May 2026',
+    description:'Infrastructure project covering Windows Server environments, Hyper-V virtualization, enterprise network configuration, SonicWall firewall security, Microsoft 365 administration and vendor coordination.',
+    sort_order:2
+  },
+  {
+    project_name:'Campus Network Infrastructure',
+    company:'LD College of Engineering',
+    role:'Network Infrastructure Project',
+    location:'Ahmedabad, India',
+    start_date:'2024',
+    end_date:'Dec 2025',
+    description:'Campus network infrastructure work including network design, Cisco, Zyxel, Fortinet, D-Link, Extreme and Aruba switch configuration, VLAN/IP configuration, routing, DHCP, firewall management and network monitoring using Cacti, OP Manager, Wireshark and Zabbix.',
+    sort_order:3
+  }
 ];
 
 function projectCompany(row){
-  const m=String(row?.description||'').match(/^\[Company:\s*([^\]]+)\]\s*/i);
+  const m=String(row?.description||'').match(/^\\[Company:\s*([^\\]]+)\\]\s*/i);
   return (m&&m[1].trim()) || row?.company || '';
 }
 function projectDescription(row){
-  return String(row?.description||'').replace(/^\[Company:\s*[^\]]+\]\s*/i,'').trim();
+  return String(row?.description||'').replace(/^\\[Company:\s*[^\\]]+\\]\s*/i,'').trim();
 }
 
 async function renderProjects(){
