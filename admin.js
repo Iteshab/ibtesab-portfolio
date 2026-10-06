@@ -63,7 +63,7 @@ async function loadProjects() {
         <h3>${escapeHtml(row.project_name || '')}</h3>
 
         <div class="company">
-          ${escapeHtml(row.role || '')}
+          ${escapeHtml(parseProjectCompany(row.description || '') || row.role || '')}
         </div>
 
         <div class="date">
@@ -117,6 +117,15 @@ async function loadProjects() {
 }
 
 
+function parseProjectCompany(description) {
+  const m = String(description || '').match(/^\[Company:\s*([^\]]+)\]\s*/i);
+  return m ? m[1].trim() : '';
+}
+
+function cleanProjectDescription(description) {
+  return String(description || '').replace(/^\[Company:\s*[^\]]+\]\s*/i, '').trim();
+}
+
 function openProjectEditor(row = null) {
 
   $('projectEditor').classList.remove('hidden');
@@ -133,6 +142,8 @@ function openProjectEditor(row = null) {
   $('projectRole').value =
     row?.role || '';
 
+  $('projectCompany').value = parseProjectCompany(row?.description || '');
+
   $('projectLocation').value =
     row?.location || '';
 
@@ -142,8 +153,7 @@ function openProjectEditor(row = null) {
   $('projectEndDate').value =
     row?.end_date || '';
 
-  $('projectDescription').value =
-    row?.description || '';
+  $('projectDescription').value = cleanProjectDescription(row?.description || '');
 
   $('projectSortOrder').value =
     row?.sort_order ?? 1;
@@ -210,6 +220,9 @@ async function saveProject(e) {
   e.preventDefault();
 
   const id = $('projectId').value;
+  const projectCompany = $('projectCompany').value.trim();
+  const cleanDescription = $('projectDescription').value.trim();
+  const storedDescription = projectCompany ? `[Company: ${projectCompany}] ${cleanDescription}` : cleanDescription;
 
   const payload = {
 
@@ -229,7 +242,7 @@ async function saveProject(e) {
       $('projectEndDate').value.trim(),
 
     description:
-      $('projectDescription').value.trim(),
+      storedDescription,
 
     sort_order:
       Number($('projectSortOrder').value) || 1
