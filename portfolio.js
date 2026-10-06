@@ -102,7 +102,7 @@ async function renderProjects(){
   try{
     const {data,error}=await sb
       .from('projects')
-      .select('id,project_name,role,location,start_date,end_date,description,sort_order')
+      .select('*')
       .neq('project_name',CMS)
       .order('sort_order',{ascending:true})
       .order('id',{ascending:true});
