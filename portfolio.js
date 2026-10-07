@@ -13,7 +13,7 @@ const setText=(e,v)=>{if(e)e.textContent=v||''};
 function apply(){
  const p=S.profile;
  const hero=document.querySelector('.hero');
- if(hero){setText(hero.querySelector('.eyebrow'),p.eyebrow);const h=hero.querySelector('h1');if(h){h.innerHTML='<span class="cmsHeroPrefix"></span> <span class="gradient cmsHeroName"></span>';setText(h.querySelector('.cmsHeroPrefix'),p.heroPrefix);setText(h.querySelector('.cmsHeroName'),p.heroName)}setText(hero.querySelector('.hero p'),p.heroDescription);setText(hero.querySelector('.profile-card h2'),p.name);setText(hero.querySelector('.profile-card .role'),p.role);const contact=hero.querySelector('.contact');if(contact){const d=contact.querySelectorAll('div');if(d[0])d[0].innerHTML='<strong>Location</strong> '+esc(p.location);if(d[1])d[1].innerHTML='<strong>Email</strong> '+esc(p.email);if(d[2])d[2].innerHTML='<strong>Phone</strong> '+esc(p.phone)}const links=hero.querySelectorAll('.socials a');if(links[0])links[0].href='mailto:'+p.email;if(links[1])links[1].href='tel:'+p.phone.replace(/[^+\d]/g,'');if(links[2]){links[2].href=p.linkedin||'#';links[2].style.display=p.linkedin?'grid':'none'}if(links[3]){links[3].href=p.github||'#';links[3].style.display=p.github?'grid':'none'}const cv=hero.querySelector('.btn.primary');if(cv)cv.href=p.cvPath||'Ibtesab_Alam_CV.pdf'}}
+ if(hero){setText(hero.querySelector('.eyebrow'),p.eyebrow);const h=hero.querySelector('h1');if(h){h.innerHTML='<span class="cmsHeroPrefix"></span> <span class="gradient cmsHeroName"></span>';setText(h.querySelector('.cmsHeroPrefix'),p.heroPrefix);setText(h.querySelector('.cmsHeroName'),p.heroName)}setText(hero.querySelector('.hero p'),p.heroDescription);setText(hero.querySelector('.profile-card h2'),p.name);setText(hero.querySelector('.profile-card .role'),p.role);const contact=hero.querySelector('.contact');if(contact){const d=contact.querySelectorAll('div');if(d[0])d[0].innerHTML='<strong>Location</strong> '+esc(p.location);if(d[1])d[1].innerHTML='<strong>Email</strong> '+esc(p.email);if(d[2])d[2].innerHTML='<strong>Phone</strong> '+esc(p.phone)}const links=hero.querySelectorAll('.socials a');if(links[0])links[0].href='mailto:'+p.email;if(links[1])links[1].href='tel:'+p.phone.replace(/[^+\d]/g,'');if(links[2]){links[2].href=p.linkedin||'#';links[2].style.display=p.linkedin?'grid':'none'}if(links[3]){links[3].href=p.github||'#';links[3].style.display=p.github?'grid':'none'}const cv=hero.querySelector('.btn.primary');if(cv)cv.href=p.cvPath||'Ibtesab_Alam_CV.pdf'}
  const about=sectionByTitle('about');if(about){setText(about.querySelector('.section-title'),p.aboutTitle);setText(about.querySelector('.section-sub'),p.aboutSubtitle);setText(about.querySelector('.card p'),p.aboutText)}
  const contact=sectionByTitle('connect');if(contact){setText(contact.querySelector('h2'),p.contactTitle);setText(contact.querySelector('p'),p.contactText)}
  const foot=document.querySelector('footer');if(foot)foot.innerHTML='© <span id="year">'+new Date().getFullYear()+'</span> '+esc(p.name)+' · '+esc(p.footerText);
@@ -98,6 +98,12 @@ async function renderProjects(){
   const section=document.getElementById('projects');
   const grid=document.getElementById('projectsList') || section?.querySelector('.grid');
   if(!grid)return;
+  const resumeCards=new Map(
+    [...grid.querySelectorAll('.project')].map(card=>[
+      card.querySelector('h3')?.textContent.trim().toLowerCase(),
+      card.outerHTML
+    ]).filter(([name])=>name)
+  );
 
   try{
     const {data,error}=await sb
@@ -109,22 +115,26 @@ async function renderProjects(){
 
     if(error){
       console.error('Projects database load error:',error);
-      grid.innerHTML='<p class="section-sub">Projects could not be loaded.</p>'; console.error('Projects query error:', error);
+      if(!resumeCards.size)grid.innerHTML='<p class="section-sub">Projects could not be loaded.</p>';
       return;
     }
 
     const rows=Array.isArray(data)?data:[];
     if(!rows.length){
-      grid.innerHTML='<p class="section-sub">No projects added yet.</p>';
+      if(!resumeCards.size)grid.innerHTML='<p class="section-sub">No projects added yet.</p>';
       return;
     }
 
-    const count=rows.length;
-    grid.innerHTML='<div class="projectGroup">'+
-      '<h3 class="projectGroupTitle">Projects <span class="projectCount">'+count+' '+(count===1?'project':'projects')+'</span></h3>'+
-      '<div class="grid">'+
-      rows.map((r,i)=>
-        '<article class="card project">'+
+    const renderedResumeProjects=new Set();
+    const projectCards=rows.map((r,i)=>{
+      const name=String(r.project_name||'').trim().toLowerCase();
+      const resumeCard=resumeCards.get(name);
+      if(resumeCard){
+        if(renderedResumeProjects.has(name))return '';
+        renderedResumeProjects.add(name);
+        return resumeCard;
+      }
+      return '<article class="card project">'+
         '<div class="num">'+String(i+1).padStart(2,'0')+' / PROJECT</div>'+
         '<h3>'+esc(r.project_name||'')+'</h3>'+
         (r.role?'<div class="company">'+esc(r.role)+'</div>':'')+
@@ -135,12 +145,24 @@ async function renderProjects(){
           (r.start_date||r.end_date?' — ':'')+
           esc(r.end_date||'')+'</div>':'')+
         (projectDescription(r)?'<p>'+esc(projectDescription(r))+'</p>':'')+
-        '</article>'
-      ).join('')+
+        '</article>';
+    }).filter(Boolean);
+    for(const [name,card] of resumeCards){
+      if(!renderedResumeProjects.has(name)){
+        renderedResumeProjects.add(name);
+        projectCards.push(card);
+      }
+    }
+
+    const count=projectCards.length;
+    grid.innerHTML='<div class="projectGroup">'+
+      '<h3 class="projectGroupTitle">Projects <span class="projectCount">'+count+' '+(count===1?'project':'projects')+'</span></h3>'+
+      '<div class="grid">'+
+      projectCards.join('')+
       '</div></div>';
   }catch(error){
     console.error('Projects load error:',error);
-    grid.innerHTML='<p class="section-sub">Projects could not be loaded.</p>';
+    if(!resumeCards.size)grid.innerHTML='<p class="section-sub">Projects could not be loaded.</p>';
   }
 }
 
