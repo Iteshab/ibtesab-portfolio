@@ -154,9 +154,7 @@ async function renderProjects(){
       }
     }
 
-    const count=projectCards.length;
     grid.innerHTML='<div class="projectGroup">'+
-      '<h3 class="projectGroupTitle">Projects <span class="projectCount">'+count+' '+(count===1?'project':'projects')+'</span></h3>'+
       '<div class="grid">'+
       projectCards.join('')+
       '</div></div>';
