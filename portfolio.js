@@ -171,8 +171,7 @@ async function main() {
   // cannot prevent Experience or Projects from rendering.
   await Promise.allSettled([
     renderExperience(),
-    renderProjects(),
-    media()
+    renderProjects()
   ]);
 
   try {
