@@ -379,13 +379,16 @@
 
 <!-- JAVASCRIPT -->
 
-<script src="admin.js"></script>
 
 
 <!-- FORGOT PASSWORD MODAL -->
 
 <div
   id="forgotModal"
+  class="modal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="resetTitle"
   style="
     display:none;
     position:fixed;
@@ -398,6 +401,7 @@
 >
 
   <div
+    class="modalBox"
     style="
       background:#fff;
       padding:24px;
@@ -411,30 +415,49 @@
     <button
       id="closeForgot"
       type="button"
+      aria-label="Close password reset"
       style="float:right"
     >
       ×
     </button>
 
-    <h2>Reset Admin Password</h2>
+    <h2 id="resetTitle">Reset Admin Password</h2>
 
-    <p>
-      Reset link will be sent to
-      <b>ibtesabalam7@gmail.com</b>.
-    </p>
+    <form id="resetRequestForm">
+      <p>Enter the admin account email. If it can receive recovery email, Supabase will send a time-limited reset link.</p>
+      <label>
+        Admin email
+        <input id="resetEmail" type="email" autocomplete="email" required>
+      </label>
+      <button id="sendReset" class="btn primary" type="submit" style="margin-top:12px">
+        Send Reset Email
+      </button>
+    </form>
 
-    <button
-      id="sendReset"
-      type="button"
-    >
-      Send Reset Email
-    </button>
+    <form id="newPasswordForm" class="hidden">
+      <p>Choose a new password for your admin account.</p>
+      <label>
+        New password
+        <input id="newPassword" type="password" autocomplete="new-password" minlength="8" required>
+      </label>
+      <label style="margin-top:12px">
+        Confirm new password
+        <input id="confirmNewPassword" type="password" autocomplete="new-password" minlength="8" required>
+      </label>
+      <button id="saveNewPassword" class="btn primary" type="submit" style="margin-top:12px">
+        Set New Password
+      </button>
+    </form>
 
-    <p id="resetMsg"></p>
+    <p id="resetMsg" class="msg" aria-live="polite"></p>
 
   </div>
 
 </div>
+
+<!-- Load after all auth and modal elements are present. -->
+<script src="admin.js?v=password-reset-1"></script>
+
 
 </body>
 </html>

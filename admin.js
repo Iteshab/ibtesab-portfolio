@@ -1,13 +1,14 @@
-const sb = window.supabase.createClient(
-  window.SUPABASE_URL,
-  window.SUPABASE_PUBLISHABLE_KEY
-);
+const sb = window.supabaseClient;
+if (!sb) {
+  throw new Error('Supabase client is not initialized. Check supabase-config.js loading order.');
+}
 
 const ADMIN_EMAIL = window.ADMIN_EMAIL;
 const BUCKET = 'profile-photo';
 const PHOTO_PATH = 'profile/profile-photo.webp';
 
 const $ = (id) => document.getElementById(id);
+let passwordRecoveryInProgress = false;
 
 const loginPanel = $('loginPanel');
 const app = $('app');
@@ -436,6 +437,10 @@ async function requireAdmin() {
     data: { user },
     error
   } = await sb.auth.getUser();
+  if (passwordRecoveryInProgress) {
+    showApp(false);
+    return false;
+  }
 
   if (error || !user) {
     showApp(false);
@@ -979,66 +984,156 @@ function setupPasswordRecovery() {
   const close = $('closeForgot');
   const send = $('sendReset');
   const resetMsg = $('resetMsg');
+  const requestForm = $('resetRequestForm');
+  const resetEmail = $('resetEmail');
+  const newPasswordForm = $('newPasswordForm');
+  const newPassword = $('newPassword');
+  const confirmNewPassword = $('confirmNewPassword');
+  const savePassword = $('saveNewPassword');
 
-  if (!forgot || !modal || !send) {
+  if (!forgot || !modal || !requestForm || !resetEmail || !newPasswordForm) {
     return;
+  }
+
+  resetEmail.value = ADMIN_EMAIL || '';
+
+  const showRequestForm = () => {
+    requestForm.classList.remove('hidden');
+    newPasswordForm.classList.add('hidden');
+    modal.style.display = 'flex';
+  };
+
+  const showPasswordForm = () => {
+    passwordRecoveryInProgress = true;
+    showApp(false);
+    if (close) close.hidden = true;
+    requestForm.classList.add('hidden');
+    newPasswordForm.classList.remove('hidden');
+    modal.style.display = 'flex';
+    if (resetMsg) {
+      resetMsg.textContent = 'Reset link verified. Choose a new password.';
+      resetMsg.className = 'msg';
+    }
+  };
+
+  sb.auth.onAuthStateChange((event) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      showPasswordForm();
+    }
+  });
+
+  const hashParams = new URLSearchParams(window.location.hash.slice(1));
+  if (hashParams.has('error') || hashParams.has('error_code')) {
+    const code = hashParams.get('error_code');
+    modal.style.display = 'flex';
+    if (resetMsg) {
+      resetMsg.textContent = code === 'otp_expired'
+        ? 'This reset link has expired or was already used. Request a new reset email.'
+        : 'This reset link is invalid or expired. Request a new reset email.';
+      resetMsg.className = 'msg error';
+    }
   }
 
   forgot.addEventListener('click', e => {
     e.preventDefault();
-
-    modal.style.display = 'flex';
-
+    showRequestForm();
     if (resetMsg) {
       resetMsg.textContent = '';
+      resetMsg.className = 'msg';
     }
   });
 
   if (close) {
     close.addEventListener('click', () => {
       modal.style.display = 'none';
+      if (!passwordRecoveryInProgress) {
+        requestForm.reset();
+        resetEmail.value = ADMIN_EMAIL || '';
+      }
     });
   }
 
-  send.addEventListener('click', async () => {
-    send.disabled = true;
-
+  requestForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    if (send) send.disabled = true;
     if (resetMsg) {
-      resetMsg.textContent =
-        'Sending reset email...';
+      resetMsg.textContent = 'Sending reset email...';
+      resetMsg.className = 'msg';
     }
 
     try {
-      const redirectTo =
-        window.location.origin + '/admin.html';
-
-      const { error } =
-        await sb.auth.resetPasswordForEmail(
-          ADMIN_EMAIL,
-          { redirectTo }
-        );
-
+      const redirectTo = new URL('admin.html', window.location.href).href;
+      const { error } = await sb.auth.resetPasswordForEmail(
+        resetEmail.value.trim(),
+        { redirectTo }
+      );
       if (error) {
         throw error;
       }
-
       if (resetMsg) {
-        resetMsg.textContent =
-          'Reset email sent. Check your inbox and Spam folder.';
+        resetMsg.textContent = 'If this account exists and can receive recovery email, a reset link has been sent. Check your inbox and Spam folder.';
+        resetMsg.className = 'msg ok';
       }
     } catch (err) {
-      console.error(
-        'Password reset error:',
-        err
-      );
-
+      console.error('Password reset request failed.');
       if (resetMsg) {
-        resetMsg.textContent =
-          err?.message ||
-          'Could not send reset email.';
+        resetMsg.textContent = 'Could not request a reset email right now. Check the email address and try again later.';
+        resetMsg.className = 'msg error';
       }
     } finally {
-      send.disabled = false;
+      if (send) send.disabled = false;
+    }
+  });
+
+  newPasswordForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    const password = newPassword.value;
+    if (password.length < 8) {
+      resetMsg.textContent = 'Use a password with at least 8 characters.';
+      resetMsg.className = 'msg error';
+      return;
+    }
+    if (password !== confirmNewPassword.value) {
+      resetMsg.textContent = 'The passwords do not match.';
+      resetMsg.className = 'msg error';
+      confirmNewPassword.focus();
+      return;
+    }
+
+    if (savePassword) savePassword.disabled = true;
+    resetMsg.textContent = 'Updating password...';
+    resetMsg.className = 'msg';
+    try {
+      const { error } = await sb.auth.updateUser({ password });
+      if (error) {
+        if (error.status === 401 || /session.*(missing|invalid|expired)|token.*(invalid|expired)/i.test(error.message || '')) {
+          throw new Error('RESET_LINK_INVALID');
+        }
+        throw error;
+      }
+
+      const email = resetEmail.value.trim() || $('email')?.value || '';
+      const { error: signOutError } = await sb.auth.signOut({ scope: 'local' });
+      passwordRecoveryInProgress = false;
+      if (close) close.hidden = false;
+      modal.style.display = 'none';
+      newPasswordForm.reset();
+      requestForm.reset();
+      resetEmail.value = ADMIN_EMAIL || '';
+      if ($('email') && email) $('email').value = email;
+      if ($('password')) $('password').value = '';
+      showApp(false);
+      msg($('loginMsg'), signOutError
+        ? 'Password changed. Please sign in again with your new password.'
+        : 'Password changed successfully. Sign in with your new password.', 'ok');
+    } catch (error) {
+      console.error('Password update failed.');
+      resetMsg.textContent = error.message === 'RESET_LINK_INVALID'
+        ? 'This reset link is invalid, expired, or already used. Request a new reset email.'
+        : (error.message || 'Could not update the password. Request a new reset link and try again.');
+      resetMsg.className = 'msg error';
+    } finally {
+      if (savePassword) savePassword.disabled = false;
     }
   });
 }
