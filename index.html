@@ -114,8 +114,13 @@
     .timeline{display:grid;gap:15px}
     .job{display:grid;grid-template-columns:190px 1fr;gap:22px}
     .date{color:var(--accent);font-weight:750;font-size:14px}.jobbox{background:#fff;border:1px solid var(--line);border-radius:20px;padding:21px}
-    .jobbox h3{margin-bottom:2px}.company{color:#4b5563;font-weight:600;margin-bottom:10px}.jobbox ul{padding-left:18px;color:var(--muted);font-size:14px}
+    .jobbox h3{margin-bottom:2px}.company{color:#4b5563;font-weight:600;margin-bottom:10px}.jobbox ul{padding-left:18px;color:var(--muted);font-size:14px}.jobbox p{color:var(--muted);font-size:14px;margin:8px 0}
     .projectGroup{margin-top:26px}.projectGroup:first-child{margin-top:0}.projectGroupTitle{font-size:22px;margin-bottom:12px}.project{min-height:180px}.project .num{font-size:13px;color:var(--accent);font-weight:800}
+    .projectImage{display:block;width:100%;max-height:190px;object-fit:cover;border-radius:14px;margin:12px 0}
+    .projectTechnologies,.experienceSkills{margin-top:12px}
+    .projectFeatures{padding-left:20px;margin-top:12px;color:var(--muted);font-size:14px}
+    .projectLinks{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+    .projectLinks .btn{padding:8px 12px;font-size:13px}
     .contact-cta{background:var(--dark);color:#fff;border-radius:30px;padding:35px}.contact-cta p{color:#cbd5e1;margin:8px 0 22px}
     footer{text-align:center;color:var(--muted);padding:35px 20px}
     @media(max-width:800px){
@@ -134,17 +139,17 @@
   <nav class="nav">
     <div class="navin">
       <a class="brand" href="#top">
-        <img src="ia-logo.png"alt='IA Logo">
-          </a>
+        <img id="siteLogo" src="ia-logo.png" alt="IA Logo">
+      </a>
       <div class="navlinks">
-        <a href="#about">About</a><a href="#skills">Skills</a><a href="#experience">Experience</a>
-        <a href="#projects">Projects</a><a href="#contact">Contact</a>
+        <a id="navAbout" href="#about">About</a><a id="navSkills" href="#skills">Skills</a><a id="navExperience" href="#experience">Experience</a>
+        <a id="navProjects" href="#projects">Projects</a><a id="navContact" href="#contact">Contact</a>
       </div>
       <button class="menu" onclick="document.querySelector('.mobilelinks').classList.toggle('open')">☰</button>
     </div>
     <div class="mobilelinks">
-      <a href="#about">About</a><a href="#skills">Skills</a><a href="#experience">Experience</a>
-      <a href="#projects">Projects</a><a href="#contact">Contact</a>
+      <a id="mobileNavAbout" href="#about">About</a><a id="mobileNavSkills" href="#skills">Skills</a><a id="mobileNavExperience" href="#experience">Experience</a>
+      <a id="mobileNavProjects" href="#projects">Projects</a><a id="mobileNavContact" href="#contact">Contact</a>
     </div>
   </nav>
 
@@ -155,8 +160,8 @@
         <h1>Hi, I'm <span class="gradient">Ibtesab Alam.</span></h1>
         <p>Experienced IT professional with 2+ years of experience in technical support, infrastructure management, networking, Windows Server, virtualization and firewall administration.</p>
         <div class="actions">
-          <a class="btn primary" href="Ibtesab_Alam_CV.pdf">Download CV</a>
-          <a class="btn" href="#contact">Let's Connect</a>
+          <a id="cvDownloadLink" class="btn primary" href="Ibtesab_Alam_CV.pdf">Download CV</a>
+          <a id="connectCtaLink" class="btn" href="#contact">Let’s Connect</a>
         </div>
       </div>
       <aside class="profile-card">
@@ -170,6 +175,7 @@
    title="LinkedIn"
    target="_blank"
    rel="noopener noreferrer">in</a>
+          <a id="heroGithub" href="#" title="GitHub" target="_blank" rel="noopener noreferrer" style="display:none">GH</a>
         </div>
         <div class="contact">
           <div><strong>Location</strong> Uttar Pradesh, India</div>
@@ -188,7 +194,7 @@
     </section>
 
     <section id="skills">
-      <h2 class="section-title">Technical Skills</h2>
+      <h2 id="skillsTitle" class="section-title">Technical Skills</h2>
       <p class="section-sub">Tools and technologies from my professional experience.</p>
       <div class="card skill">
         <span class="tag">Cisco</span><span class="tag">Zyxel</span><span class="tag">Fortinet</span><span class="tag">D-Link</span>
@@ -202,16 +208,16 @@
     </section>
 
     <section id="experience">
-      <h2 class="section-title">Experience</h2>
+      <h2 id="experienceTitle" class="section-title">Experience</h2>
       <p class="section-sub">Professional roles and infrastructure responsibilities.</p>
       <div id="experienceList" class="timeline">
         <article class="job"><div class="date">September 2026 — Present</div><div class="jobbox"><h3>Network Engineer</h3><div class="company">Ofis Square</div><ul><li>Manage and maintain network infrastructure, including switches, routers, VLANs, IP addressing and network connectivity.</li><li>Monitor and troubleshoot LAN/WAN connectivity, DHCP, DNS and network-related issues.</li><li>Configure and troubleshoot firewall and network security solutions.</li><li>Manage Zoho Mail Admin Console, including user administration, aliases, mailbox settings and mail forwarding.</li><li>Provide IT support and maintain infrastructure documentation.</li></ul></div></article>
         <article class="job"><div class="date">June 2024 — August 2026</div><div class="jobbox"><h3>Network Engineer</h3><div class="company">Aspire Techno Global Pvt. Ltd.</div><ul><li>Designed, configured and maintained enterprise network infrastructure including routers, switches, VLANs, IP addressing and routing.</li><li>Configured and managed Sophos, Fortinet and pfSense firewalls.</li><li>Managed Windows Server environments including Active Directory, DNS, DHCP and WDS.</li><li>Worked with Hyper-V/VMware and supported Windows/Linux operating systems.</li><li>Implemented and monitored infrastructure using Cacti, OP Manager, Wireshark and Zabbix.</li></ul></div></article>
-      </div></div>
+      </div>
     </section>
 
     <section id="projects">
-      <h2 class="section-title">Projects</h2>
+      <h2 id="projectsTitle" class="section-title">Projects</h2>
       <div id="projectsList">
         <div class="projectGroup">
           <div class="grid">
@@ -241,8 +247,8 @@
       </div>
     </section>
 
-    <section>
-      <h2 class="section-title">Education & Certification</h2>
+    <section id="education">
+      <h2 id="educationTitle" class="section-title">Education & Certification</h2>
       <div class="grid">
         <div class="card"><h3>Bachelor of Science (B.Sc)</h3><p>Siddharth University<br>Passed: May 2026 · 67.00%</p></div>
         <div class="card"><h3>DCC — Diploma in Cloud Computing</h3><p>Jetking<br>2024</p></div>
@@ -255,8 +261,10 @@
         <h2>Let's connect.</h2>
         <p>For networking, infrastructure or IT support opportunities, feel free to reach out.</p>
         <div class="actions">
-          <a class="btn primary" href="mailto:ibtesabalam7@gmail.com">Email Me</a>
-          <a class="btn" href="tel:+919918412321">Call Me</a>
+          <a id="contactEmailLink" class="btn primary" href="mailto:ibtesabalam7@gmail.com">Email Me</a>
+          <a id="contactPhoneLink" class="btn" href="tel:+919918412321">Call Me</a>
+          <a id="contactLinkedinLink" class="btn" href="https://www.linkedin.com/in/ibtesab-alam/" target="_blank" rel="noopener noreferrer" style="display:none">LinkedIn</a>
+          <a id="contactGithubLink" class="btn" href="#" target="_blank" rel="noopener noreferrer" style="display:none">GitHub</a>
         </div>
       </div>
     </section>
@@ -264,6 +272,7 @@
 
   <footer>© <span id="year"></span> Ibtesab Alam · Network & IT Infrastructure · India · Last updated via Codex</footer>
   <script>document.getElementById('year').textContent=new Date().getFullYear();</script>
-<script src="portfolio.js?v=20261007-1"></script>
+<script src="portfolio-fallbacks.js?v=cms-2"></script>
+<script src="portfolio.js?v=cms-2"></script>
 </body>
 </html>

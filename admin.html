@@ -82,7 +82,120 @@
   <!-- ADMIN APP -->
 
   <main id="app" class="hidden">
+    <div id="adminLoadMsg" class="msg" aria-live="polite"></div>
+    <p class="msg error">CMS writes must be restricted by Supabase Row Level Security. The browser-side admin email check is not a substitute for database policies.</p>
 
+    <section class="dashboardStats" aria-label="Portfolio content summary">
+      <article class="panel statCard"><span>Projects</span><strong id="countProjects">—</strong></article>
+      <article class="panel statCard"><span>Skills</span><strong id="countSkills">—</strong></article>
+      <article class="panel statCard"><span>Experience</span><strong id="countExperience">—</strong></article>
+      <article class="panel statCard"><span>Education</span><strong id="countEducation">—</strong></article>
+      <article class="panel statCard"><span>Published items</span><strong id="countPublished">—</strong></article>
+    </section>
+
+    <section class="panel">
+      <div class="sectionHead">
+        <div>
+          <h2>Website Content</h2>
+          <p class="muted">Edit profile, hero, about, contact and footer content.</p>
+        </div>
+      </div>
+      <form id="siteForm" class="formGrid">
+        <label>Name<input id="siteName" required></label>
+        <label>Role / Title<input id="siteRole" required></label>
+        <label>Eyebrow<input id="siteEyebrow"></label>
+        <label>Location<input id="siteLocation"></label>
+        <label>Email<input id="siteEmail" type="email"></label>
+        <label>Phone<input id="sitePhone" type="tel"></label>
+        <label>LinkedIn URL<input id="siteLinkedin" type="url"></label>
+        <label>GitHub URL<input id="siteGithub" type="url"></label>
+        <label>Hero Prefix<input id="siteHeroPrefix"></label>
+        <label>Hero Name<input id="siteHeroName"></label>
+        <label class="full">Hero Description<textarea id="siteHeroDescription" rows="3"></textarea></label>
+        <label>Resume Button Text<input id="cvButtonText"></label>
+        <label>Connect Button Text<input id="connectButtonText"></label>
+        <label>Navbar: About<input id="navAboutLabel"></label>
+        <label>Navbar: Skills<input id="navSkillsLabel"></label>
+        <label>Navbar: Experience<input id="navExperienceLabel"></label>
+        <label>Navbar: Projects<input id="navProjectsLabel"></label>
+        <label>Navbar: Contact<input id="navContactLabel"></label>
+        <label>About Title<input id="aboutTitle"></label>
+        <label>About Subtitle<input id="aboutSubtitle"></label>
+        <label class="full">About Text<textarea id="aboutText" rows="5"></textarea></label>
+        <label>Skills Section Title<input id="skillsTitle"></label>
+        <label>Skills Subtitle<input id="skillsSubtitle"></label>
+        <label>Experience Section Title<input id="experienceTitle"></label>
+        <label>Experience Subtitle<input id="experienceSubtitle"></label>
+        <label>Projects Section Title<input id="projectsTitle"></label>
+        <label>Projects Subtitle<input id="projectsSubtitle"></label>
+        <label>Education Section Title<input id="educationTitleText"></label>
+        <label>Education Subtitle<input id="educationSubtitle"></label>
+        <label>Contact Title<input id="contactTitle"></label>
+        <label>Contact Email<input id="contactEmail" type="email"></label>
+        <label>Contact Phone<input id="contactPhone" type="tel"></label>
+        <label>Email Button Text<input id="contactEmailButtonText"></label>
+        <label>Phone Button Text<input id="contactPhoneButtonText"></label>
+        <label>LinkedIn Button Text<input id="contactLinkedinButtonText"></label>
+        <label>GitHub Button Text<input id="contactGithubButtonText"></label>
+        <label>Contact LinkedIn URL<input id="contactLinkedin" type="url"></label>
+        <label>Contact GitHub URL<input id="contactGithub" type="url"></label>
+        <label class="full">Contact Description<textarea id="contactText" rows="3"></textarea></label>
+        <label>Footer Text<input id="footerText"></label>
+        <label>Copyright Text<input id="copyrightText" placeholder="© {year} {name}"></label>
+        <label>CV Path / URL<input id="cvPath" placeholder="Ibtesab_Alam_CV.pdf"></label>
+        <div class="full actions"><button class="btn primary" type="submit">Save Website Content</button></div>
+        <div id="siteMsg" class="msg full" aria-live="polite"></div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="sectionHead">
+        <div><h2>Technical Skills</h2><p class="muted">Manage skill names, optional categories and display order.</p></div>
+        <button id="newSkill" class="btn primary" type="button">+ Add Skill</button>
+      </div>
+      <div id="skillsAdminList" class="list"></div>
+      <div id="skillListMsg" class="msg" aria-live="polite"></div>
+    </section>
+    <section id="skillEditor" class="panel hidden">
+      <div class="sectionHead">
+        <div><h2>Skill</h2><p class="muted">Edit the skill and its display order.</p></div>
+        <button id="cancelSkill" class="btn ghost" type="button">Cancel</button>
+      </div>
+      <form id="skillForm" class="formGrid">
+        <input id="skillId" type="hidden">
+        <label>Skill Name<input id="skillName" required></label>
+        <label>Category (optional)<input id="skillCategory"></label>
+        <label>Display Order<input id="skillOrder" type="number" min="1" step="1" value="1" required></label>
+        <div class="full actions"><button class="btn primary" type="submit">Save Skill</button></div>
+        <div id="skillMsg" class="msg full" aria-live="polite"></div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="sectionHead">
+        <div><h2>Education & Certification</h2><p class="muted">Manage qualifications and their display order.</p></div>
+        <button id="newEducation" class="btn primary" type="button">+ Add Education</button>
+      </div>
+      <div id="educationAdminList" class="list"></div>
+      <div id="educationListMsg" class="msg" aria-live="polite"></div>
+    </section>
+    <section id="educationEditor" class="panel hidden">
+      <div class="sectionHead">
+        <div><h2>Education or Certification</h2><p class="muted">Add or update an education entry.</p></div>
+        <button id="cancelEducation" class="btn ghost" type="button">Cancel</button>
+      </div>
+      <form id="educationForm" class="formGrid">
+        <input id="educationId" type="hidden">
+        <label>Title<input id="educationTitle" required></label>
+        <label>Institution<input id="educationInstitute" required></label>
+        <label>Year / Date<input id="educationYear"></label>
+        <label>Result / Grade<input id="educationResult"></label>
+        <label class="full">Details<textarea id="educationDetails" rows="3"></textarea></label>
+        <label>Display Order<input id="educationOrder" type="number" min="1" step="1" value="1" required></label>
+        <div class="full actions"><button class="btn primary" type="submit">Save Education</button></div>
+        <div id="educationMsg" class="msg full" aria-live="polite"></div>
+      </form>
+    </section>
 
 <!-- EXPERIENCE -->
 
@@ -109,6 +222,7 @@
       </div>
 
       <div id="experienceList" class="list"></div>
+      <div id="experienceListMsg" class="msg" aria-live="polite"></div>
 
     </section>
 <section class="panel">
@@ -124,6 +238,7 @@
   </div>
 
   <div id="projectList" class="list"></div>
+  <div id="projectListMsg" class="msg" aria-live="polite"></div>
 </section>
 
 <section id="projectEditor" class="panel hidden">
@@ -175,14 +290,20 @@
 
     <label>
       Display Order
-      <input id="projectSortOrder" type="number" value="1" min="1">
+      <input id="projectSortOrder" type="number" value="1" min="1" step="1" required>
     </label>
 
     <label class="full">
-      Project Details
-      <span class="hint">Put one responsibility per line.</span>
+      Description
       <textarea id="projectDescription" rows="8"></textarea>
     </label>
+    <label class="full">Technologies (one per line)<textarea id="projectTechnologies" rows="3"></textarea></label>
+    <label class="full">Features (one per line)<textarea id="projectFeatures" rows="3"></textarea></label>
+    <label>GitHub URL<input id="projectGithub" type="url"></label>
+    <label>Live / Demo URL<input id="projectLiveUrl" type="url"></label>
+    <label class="full">Thumbnail URL<input id="projectImageUrl" type="url"><img id="projectImagePreview" class="adminMediaPreview" alt="Project thumbnail preview" hidden></label>
+    <label class="check"><input id="projectPublished" type="checkbox" checked> Published on portfolio</label>
+    <label class="check"><input id="projectFeatured" type="checkbox"> Featured project</label>
 
     <div class="full actions">
       <button class="btn primary" type="submit">
@@ -222,6 +343,9 @@
     <form id="seoForm" class="formGrid">
       <label class="full">Page Title<input id="seoTitle"></label><label class="full">Meta Description<textarea id="seoDescription" rows="3"></textarea></label>
       <label class="full">Keywords<input id="seoKeywords"></label><label>OG Title<input id="ogTitle"></label><label>OG Description<input id="ogDescription"></label>
+      <label>Canonical URL<input id="canonicalUrl" type="url"></label><label>Open Graph Image URL<input id="ogImage" type="url"></label>
+      <label>Twitter Title<input id="twitterTitle"></label><label>Twitter Description<input id="twitterDescription"></label>
+      <label class="full">Twitter Image URL<input id="twitterImage" type="url"></label>
       <div class="full actions"><button class="btn primary" type="submit">Save SEO</button></div><div id="seoMsg" class="msg full"></div>
     </form>
   </section>
@@ -229,9 +353,9 @@
   <section class="panel">
     <div class="sectionHead"><div><h2>Media</h2><p class="muted">Upload profile photo, logo and CV directly from the browser.</p></div></div>
     <div class="mediaGrid">
-      <div class="mediaCard"><h3>Profile Photo</h3><input id="photoInput" type="file" accept="image/png,image/jpeg,image/webp"><button id="uploadPhoto" class="btn primary" type="button">Upload Photo</button><div id="photoMsg" class="msg"></div></div>
-      <div class="mediaCard"><h3>Logo</h3><input id="logoInput" type="file" accept="image/png,image/jpeg,image/webp"><button id="uploadLogo" class="btn primary" type="button">Upload Logo</button><div id="logoMsg" class="msg"></div></div>
-      <div class="mediaCard"><h3>CV</h3><input id="cvInput" type="file" accept=".pdf,application/pdf"><button id="uploadCv" class="btn primary" type="button">Upload CV</button><div id="cvMsg" class="msg"></div></div>
+      <div class="mediaCard"><h3>Profile Photo</h3><img id="photoMediaPreview" class="adminMediaPreview" alt="Current profile photo"><input id="photoInput" type="file" accept="image/png,image/jpeg,image/webp"><button id="uploadPhoto" class="btn primary" type="button">Upload Photo</button><div id="photoMsg" class="msg"></div></div>
+      <div class="mediaCard"><h3>Logo</h3><img id="logoMediaPreview" class="adminMediaPreview" alt="Current portfolio logo"><input id="logoInput" type="file" accept="image/png,image/jpeg,image/webp"><button id="uploadLogo" class="btn primary" type="button">Upload Logo</button><div id="logoMsg" class="msg"></div></div>
+      <div class="mediaCard"><h3>CV</h3><a id="currentCvLink" target="_blank" rel="noopener noreferrer">View current CV</a><input id="cvInput" type="file" accept=".pdf,application/pdf"><button id="uploadCv" class="btn primary" type="button">Upload CV</button><div id="cvMsg" class="msg"></div></div>
     </div>
   </section>
 
@@ -313,10 +437,14 @@
           >
         </label>
 
+        <label>
+          Location
+          <input id="experienceLocation">
+        </label>
 
         <label class="full">
 
-          Responsibilities
+          Description / Responsibilities
 
           <span class="hint">
             Put one responsibility per line.
@@ -329,6 +457,9 @@
 
         </label>
 
+        <label class="full">Role Summary<textarea id="experienceSummary" rows="3"></textarea></label>
+        <label class="full">Technologies / Skills (one per line)<textarea id="experienceTechnologies" rows="3"></textarea></label>
+        <label class="check"><input id="experiencePublished" type="checkbox" checked> Published on portfolio</label>
 
         <label>
           Display Order
@@ -338,6 +469,8 @@
             type="number"
             value="1"
             min="1"
+            step="1"
+            required
           >
 
         </label>
@@ -375,10 +508,6 @@
   </main>
 
 </div>
-
-
-<!-- JAVASCRIPT -->
-
 
 
 <!-- FORGOT PASSWORD MODAL -->
@@ -455,9 +584,14 @@
 
 </div>
 
-<!-- Load after all auth and modal elements are present. -->
-<script src="admin.js?v=password-reset-1"></script>
+<dialog id="contentPreview" class="contentPreview">
+  <div class="previewHead"><h2 id="previewTitle">Content preview</h2><button id="closePreview" class="btn ghost" type="button">Close</button></div>
+  <div id="previewBody" class="previewBody"></div>
+</dialog>
 
+<!-- Load after all auth and modal elements are present. -->
+<script src="portfolio-fallbacks.js?v=cms-2"></script>
+<script src="admin.js?v=cms-2"></script>
 
 </body>
 </html>
