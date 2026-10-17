@@ -1,0 +1,8 @@
+# Keep repository notes, database migrations, and local development files out of public deployments.
+README.md
+supabase/
+.venv/
+.git/
+.agents/
+.codex/
+.aws/
