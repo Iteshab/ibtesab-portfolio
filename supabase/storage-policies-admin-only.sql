@@ -1,8 +1,11 @@
--- NOT APPLIED. This file is separate because Supabase-managed storage.objects
--- is owned by supabase_storage_admin, not by the application-table owner.
+-- This file is separate because Supabase-managed storage.objects is owned by
+-- supabase_storage_admin, not by the application-table owner.
 -- Run only in an authorized SQL session where current_user is the actual
 -- storage.objects owner. Do not transfer ownership or assume role blindly.
 -- Requires the core portfolio migration first, for portfolio_security helpers.
+-- The bucket remains public for direct object downloads. Do not add a public
+-- storage.objects SELECT policy: it would expose object listing. Admin SELECT
+-- is required for the Admin Panel's upsert uploads.
 
 begin;
 
@@ -60,6 +63,7 @@ begin
       'Profile Photo upload permission zhjthq_1',
       'Profile Photo upload permission zhjthq_2',
       'Public can read portfolio media',
+      'Portfolio admin can read portfolio media',
       'Portfolio admin can upload portfolio media',
       'Portfolio admin can update portfolio media'
     ]::text[]);
@@ -75,14 +79,18 @@ drop policy if exists "Profile Photo upload permission zhjthq_0" on storage.obje
 drop policy if exists "Profile Photo upload permission zhjthq_1" on storage.objects;
 drop policy if exists "Profile Photo upload permission zhjthq_2" on storage.objects;
 drop policy if exists "Public can read portfolio media" on storage.objects;
+drop policy if exists "Portfolio admin can read portfolio media" on storage.objects;
 drop policy if exists "Portfolio admin can upload portfolio media" on storage.objects;
 drop policy if exists "Portfolio admin can update portfolio media" on storage.objects;
 
-create policy "Public can read portfolio media"
+create policy "Portfolio admin can read portfolio media"
 on storage.objects
 for select
-to anon, authenticated
-using (bucket_id = 'profile-photo');
+to authenticated
+using (
+  bucket_id = 'profile-photo'
+  and portfolio_security.is_portfolio_admin()
+);
 
 create policy "Portfolio admin can upload portfolio media"
 on storage.objects
